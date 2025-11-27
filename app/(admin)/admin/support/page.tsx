@@ -88,10 +88,10 @@ export default function AdminSupportPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Support Tickets</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Support Tickets</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Manage and respond to support tickets
         </p>
       </div>
@@ -113,14 +113,14 @@ export default function AdminSupportPage() {
                     className="rounded-lg border p-4 hover:bg-accent/50 cursor-pointer"
                     onClick={() => setSelectedTicket(ticket._id)}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold">{ticket.subject}</h3>
-                          <Badge className={getStatusColor(ticket.status)}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-sm sm:text-base break-words">{ticket.subject}</h3>
+                          <Badge className={`${getStatusColor(ticket.status)} text-xs`}>
                             {ticket.status}
                           </Badge>
-                          <Badge className={getPriorityColor(ticket.priority)}>
+                          <Badge className={`${getPriorityColor(ticket.priority)} text-xs`}>
                             {ticket.priority}
                           </Badge>
                         </div>
@@ -193,7 +193,7 @@ function TicketDetailDialog({
 
   return (
     <Dialog open={!!ticketId} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle>{ticket.subject}</DialogTitle>
           <DialogDescription>
@@ -237,23 +237,26 @@ function TicketDetailDialog({
                 className="mt-2"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={() => onRespond(ticketId)}
                 disabled={!responseMessage.trim()}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <Send className="mr-2 h-4 w-4" />
+                <Send className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 Send Response
               </Button>
               <Button
                 variant="outline"
                 onClick={() => onStatusChange(ticketId, "in_progress")}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
                 Mark In Progress
               </Button>
               <Button
                 variant="outline"
                 onClick={() => onStatusChange(ticketId, "resolved")}
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
                 Mark Resolved
               </Button>

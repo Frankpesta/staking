@@ -100,10 +100,10 @@ export default function KYCPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">KYC Verification</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">KYC Verification</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Complete your identity verification to unlock all features
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function KYCPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {Object.entries(KYC_DOCUMENT_TYPES).map(([key, value]) => {
           const status = getDocumentStatus(value);
           const isUploading = uploading === value;
@@ -151,7 +151,7 @@ export default function KYCPage() {
           return (
             <Card key={key}>
               <CardHeader>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-base sm:text-lg">
                   {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                 </CardTitle>
                 <CardDescription>

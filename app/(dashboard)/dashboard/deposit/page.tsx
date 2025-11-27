@@ -145,10 +145,10 @@ export default function DepositPage() {
   // Step 1: Coin Selection
   if (!selectedCoin) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Deposit Funds</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Deposit Funds</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Select a cryptocurrency to deposit
           </p>
         </div>
@@ -202,8 +202,8 @@ export default function DepositPage() {
             ← Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Enter Deposit Amount</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Enter Deposit Amount</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               How much {selectedCoinConfig?.symbol} would you like to deposit?
             </p>
           </div>
@@ -277,8 +277,8 @@ export default function DepositPage() {
             ← Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Connect Your Wallet</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Connect Your Wallet</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Connect your wallet to proceed with {amount} {selectedCoinConfig?.symbol} deposit
             </p>
           </div>
@@ -349,8 +349,8 @@ export default function DepositPage() {
           ← Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Deposit {selectedCoinConfig?.symbol}</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Deposit {selectedCoinConfig?.symbol}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Send {amount} {selectedCoinConfig?.symbol} to the address below
           </p>
         </div>
@@ -397,7 +397,7 @@ export default function DepositPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 max-w-5xl">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 max-w-5xl">
         {/* Selected Coin Info */}
         <Card>
           <CardHeader>
@@ -456,8 +456,8 @@ export default function DepositPage() {
           <CardContent className="space-y-4">
             {platformWallet?.address ? (
               <>
-                <div className="flex items-center justify-center rounded-lg border bg-muted p-4">
-                  <QRCodeSVG value={platformWallet.address} size={200} />
+                <div className="flex items-center justify-center rounded-lg border bg-muted p-3 sm:p-4">
+                  <QRCodeSVG value={platformWallet.address} size={160} className="sm:w-[200px] sm:h-[200px]" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 rounded-md border bg-muted p-3">

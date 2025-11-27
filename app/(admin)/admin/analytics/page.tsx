@@ -59,22 +59,22 @@ export default function AdminAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Analytics</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Analytics</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Platform statistics and insights
         </p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalUsers}</div>
             <p className="text-xs text-muted-foreground">
               {verifiedUsers} verified ({kycApproved} KYC approved)
             </p>
@@ -110,14 +110,14 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Transaction Types</CardTitle>
-            <CardDescription>Distribution of transaction types</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Transaction Types</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Distribution of transaction types</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <PieChart>
                 <Pie
                   data={transactionTypeData}
@@ -128,7 +128,8 @@ export default function AdminAnalyticsPage() {
                     const percent = props.percent ?? 0;
                     return `${props.name} ${(percent * 100).toFixed(0)}%`;
                   }}
-                  outerRadius={80}
+                  outerRadius={60}
+                  className="sm:outerRadius-80"
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -148,7 +149,7 @@ export default function AdminAnalyticsPage() {
             <CardDescription>Most staked coins</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <PieChart>
                 <Pie
                   data={coinDistributionData}
@@ -159,7 +160,8 @@ export default function AdminAnalyticsPage() {
                     const percent = props.percent ?? 0;
                     return `${props.name} ${(percent * 100).toFixed(0)}%`;
                   }}
-                  outerRadius={80}
+                  outerRadius={60}
+                  className="sm:outerRadius-80"
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -179,7 +181,7 @@ export default function AdminAnalyticsPage() {
             <CardDescription>Platform revenue trends</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <BarChart data={monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />

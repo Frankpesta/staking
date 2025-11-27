@@ -97,15 +97,15 @@ export default function StakingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Staking</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Staking</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Stake your coins and earn fixed returns
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Staking Form */}
         <Card>
           <CardHeader>
@@ -175,7 +175,7 @@ export default function StakingPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Staking Duration</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   {stakingOptions.map((option) => (
                     <Button
                       key={option.duration}
@@ -185,10 +185,10 @@ export default function StakingPage() {
                         setSelectedDuration(option.duration);
                         setValue("duration", option.duration);
                       }}
-                      className="flex flex-col items-center gap-1 h-auto py-3"
+                      className="flex flex-col items-center gap-1 h-auto py-2 sm:py-3 text-xs sm:text-sm"
                     >
-                      <span className="font-semibold">{option.duration} days</span>
-                      <span className="text-xs opacity-80">{option.roiPercentage}% ROI</span>
+                      <span className="font-semibold whitespace-nowrap">{option.duration}d</span>
+                      <span className="text-xs opacity-80">{option.roiPercentage}%</span>
                     </Button>
                   ))}
                 </div>
@@ -280,19 +280,19 @@ export default function StakingPage() {
                 const daysRemaining = Math.ceil((pool.endDate - Date.now()) / (24 * 60 * 60 * 1000));
                 const progress = ((Date.now() - pool.startDate) / (pool.endDate - pool.startDate)) * 100;
                 return (
-                  <div key={pool._id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-semibold">
+                  <div key={pool._id} className="rounded-lg border p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm sm:text-base">
                           {pool.amount.toFixed(6)} {pool.coin}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           {pool.duration} days • {pool.roiPercentage}% ROI
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{daysRemaining} days left</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs sm:text-sm font-medium">{daysRemaining} days left</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           Matures: {new Date(pool.endDate).toLocaleDateString()}
                         </p>
                       </div>

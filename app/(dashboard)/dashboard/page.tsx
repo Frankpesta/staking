@@ -69,10 +69,10 @@ export default function DashboardPage() {
   const totalDeposited = Object.values(depositBalanceData || {}).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Welcome back, {user.email}
         </p>
       </div>
@@ -106,17 +106,17 @@ export default function DashboardPage() {
           </Card>
         </div>
       ) : (
-        <StaggerChildren className="grid gap-4 md:grid-cols-3">
+        <StaggerChildren className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <Card className="balance-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available Balance</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Available Balance</CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold break-words">
                 ${totalAvailable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 Ready to stake or withdraw
               </p>
             </CardContent>
@@ -128,7 +128,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold break-words">
                 ${totalStaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -143,7 +143,7 @@ export default function DashboardPage() {
               <ArrowUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold break-words">
                 ${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -166,11 +166,11 @@ export default function DashboardPage() {
               {activities.map((activity) => (
                 <div
                   key={activity._id}
-                  className="flex items-center justify-between border-b pb-3 last:border-0"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-3 last:border-0"
                 >
-                  <div>
-                    <p className="font-medium">{activity.description}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base break-words">{activity.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {new Date(activity.timestamp).toLocaleString()}
                     </p>
                   </div>

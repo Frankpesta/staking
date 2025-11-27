@@ -88,15 +88,15 @@ export default function WithdrawPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Withdraw Funds</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Withdraw Funds</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Request withdrawal to your external wallet
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Withdrawal Form */}
         <Card>
           <CardHeader>

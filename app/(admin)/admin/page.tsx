@@ -40,10 +40,10 @@ export default function AdminOverviewPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Admin Overview</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Admin Overview</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Platform statistics and management dashboard
         </p>
       </div>
@@ -104,14 +104,14 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Deposit Volume</CardTitle>
-            <CardDescription>Monthly deposit trends</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Deposit Volume</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Monthly deposit trends</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <LineChart data={depositData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
@@ -130,7 +130,7 @@ export default function AdminOverviewPage() {
             <CardDescription>New user registrations</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
               <BarChart data={userGrowthData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
@@ -151,22 +151,22 @@ export default function AdminOverviewPage() {
           <CardDescription>Common administrative tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <a href="/admin/transactions" className="rounded-lg border p-4 hover:bg-accent">
-              <div className="font-semibold">Review Transactions</div>
-              <div className="text-sm text-muted-foreground">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="/admin/transactions" className="rounded-lg border p-3 sm:p-4 hover:bg-accent transition-colors">
+              <div className="font-semibold text-sm sm:text-base">Review Transactions</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {pendingTransactions?.length || 0} pending
               </div>
             </a>
-            <a href="/admin/kyc" className="rounded-lg border p-4 hover:bg-accent">
-              <div className="font-semibold">Review KYC</div>
-              <div className="text-sm text-muted-foreground">
+            <a href="/admin/kyc" className="rounded-lg border p-3 sm:p-4 hover:bg-accent transition-colors">
+              <div className="font-semibold text-sm sm:text-base">Review KYC</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {pendingKYC?.length || 0} pending
               </div>
             </a>
-            <a href="/admin/support" className="rounded-lg border p-4 hover:bg-accent">
-              <div className="font-semibold">Support Tickets</div>
-              <div className="text-sm text-muted-foreground">
+            <a href="/admin/support" className="rounded-lg border p-3 sm:p-4 hover:bg-accent transition-colors sm:col-span-2 lg:col-span-1">
+              <div className="font-semibold text-sm sm:text-base">Support Tickets</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {tickets?.length || 0} open
               </div>
             </a>

@@ -12,10 +12,10 @@ export default function AdminStakingPage() {
   const completedPools = useQuery(api.staking.getAllStakingPools, { status: "completed" });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Staking Pools</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Staking Pools</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Monitor all active and completed staking pools
         </p>
       </div>
@@ -40,23 +40,23 @@ export default function AdminStakingPage() {
                 const expectedReturn = (pool.amount * pool.roiPercentage) / 100;
 
                 return (
-                  <div key={pool._id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold">
+                  <div key={pool._id} className="rounded-lg border p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="font-semibold text-sm sm:text-base">
                             {pool.amount.toFixed(6)} {pool.coin}
                           </span>
-                          <Badge>{pool.duration} days</Badge>
-                          <Badge variant="secondary">{pool.roiPercentage}% ROI</Badge>
+                          <Badge className="text-xs">{pool.duration} days</Badge>
+                          <Badge variant="secondary" className="text-xs">{pool.roiPercentage}% ROI</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           Expected return: {expectedReturn.toFixed(6)} {pool.coin}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{daysRemaining} days left</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs sm:text-sm font-medium">{daysRemaining} days left</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           Matures: {new Date(pool.endDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -96,17 +96,17 @@ export default function AdminStakingPage() {
           {completedPools && completedPools.length > 0 ? (
             <div className="space-y-4">
               {completedPools.slice(0, 20).map((pool) => (
-                <div key={pool._id} className="rounded-lg border p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold">
+                <div key={pool._id} className="rounded-lg border p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-semibold text-sm sm:text-base">
                           {pool.amount.toFixed(6)} {pool.coin}
                         </span>
-                        <Badge variant="secondary">{pool.duration} days</Badge>
+                        <Badge variant="secondary" className="text-xs">{pool.duration} days</Badge>
                       </div>
                       {pool.maturedAmount && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           Matured: {pool.maturedAmount.toFixed(6)} {pool.coin}
                         </p>
                       )}

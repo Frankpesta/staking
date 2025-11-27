@@ -56,10 +56,10 @@ export default function AdminKYCPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">KYC Review</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">KYC Review</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Review and approve KYC documents
         </p>
       </div>
@@ -100,7 +100,7 @@ export default function AdminKYCPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-3">
                       <Button
                         size="sm"
                         onClick={() => {
@@ -109,24 +109,25 @@ export default function AdminKYCPage() {
                           });
                         }}
                         variant="outline"
+                        className="text-xs sm:text-sm"
                       >
                         View Document
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => handleApprove(doc._id)}
-                        className="flex-1"
+                        className="flex-1 text-xs sm:text-sm"
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" />
+                        <CheckCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => setSelectedDocument(doc._id)}
-                        className="flex-1"
+                        className="flex-1 text-xs sm:text-sm"
                       >
-                        <XCircle className="mr-2 h-4 w-4" />
+                        <XCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Reject
                       </Button>
                     </div>

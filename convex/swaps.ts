@@ -148,7 +148,7 @@ export const getExchangeRate = query({
   },
   handler: async (ctx, args) => {
     // This is a placeholder. The client should use the calculateExchangeRate action
-    // from convex/actions/crypto-prices.ts to get real-time rates.
+    // from convex/actions/crypto_prices.ts to get real-time rates.
     // We return a placeholder here to maintain compatibility.
     return {
       rate: 1.0, // Placeholder - client should calculate using action

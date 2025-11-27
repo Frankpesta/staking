@@ -62,10 +62,10 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Transactions</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Transactions</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           View all your transaction history
         </p>
       </div>
@@ -85,37 +85,38 @@ export default function TransactionsPage() {
                 return (
                   <div
                     key={transaction._id}
-                    className="flex items-center justify-between rounded-lg border p-4"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border p-3 sm:p-4"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-semibold capitalize ${getTypeColor(transaction.type)}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className={`text-sm sm:text-base font-semibold capitalize ${getTypeColor(transaction.type)}`}>
                           {transaction.type}
                         </span>
-                        <Badge className={getStatusColor(transaction.status)}>
+                        <Badge className={`${getStatusColor(transaction.status)} text-xs`}>
                           {transaction.status}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="text-sm sm:text-base text-muted-foreground break-words">
                         {transaction.amount.toFixed(6)} {transaction.coin}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {new Date(transaction.requestedAt).toLocaleString()}
                       </p>
                       {transaction.adminNote && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-muted-foreground break-words">
                           Note: {transaction.adminNote}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 sm:flex-shrink-0">
                       {explorerUrl && (
                         <a
                           href={explorerUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:underline"
+                          className="text-primary hover:underline flex items-center gap-1 text-xs sm:text-sm"
                         >
+                          <span className="hidden sm:inline">View</span>
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       )}

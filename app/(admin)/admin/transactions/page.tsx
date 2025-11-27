@@ -95,41 +95,47 @@ export default function AdminTransactionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Transaction Management</h1>
-          <p className="text-muted-foreground">
-            Review and process pending transactions
-          </p>
-        </div>
+    <div className="space-y-4 sm:space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold">Transaction Management</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          Review and process pending transactions
+        </p>
       </div>
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-2">
+        <CardContent className="pt-4 sm:pt-6">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={filter === "all" ? "default" : "outline"}
               onClick={() => setFilter("all")}
+              size="sm"
+              className="text-xs sm:text-sm"
             >
               All
             </Button>
             <Button
               variant={filter === "deposit" ? "default" : "outline"}
               onClick={() => setFilter("deposit")}
+              size="sm"
+              className="text-xs sm:text-sm"
             >
               Deposits
             </Button>
             <Button
               variant={filter === "withdrawal" ? "default" : "outline"}
               onClick={() => setFilter("withdrawal")}
+              size="sm"
+              className="text-xs sm:text-sm"
             >
               Withdrawals
             </Button>
             <Button
               variant={filter === "swap" ? "default" : "outline"}
               onClick={() => setFilter("swap")}
+              size="sm"
+              className="text-xs sm:text-sm"
             >
               Swaps
             </Button>
@@ -188,13 +194,13 @@ export default function AdminTransactionsPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0">
                       <Button
                         size="sm"
                         onClick={() => handleApprove(transaction._id)}
-                        className="flex-1"
+                        className="flex-1 text-xs sm:text-sm"
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" />
+                        <CheckCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Approve
                       </Button>
                       <Button
@@ -204,9 +210,9 @@ export default function AdminTransactionsPage() {
                           const reason = prompt("Rejection reason:");
                           if (reason) handleReject(transaction._id, reason);
                         }}
-                        className="flex-1"
+                        className="flex-1 text-xs sm:text-sm"
                       >
-                        <XCircle className="mr-2 h-4 w-4" />
+                        <XCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                         Reject
                       </Button>
                       {transaction.type === "withdrawal" && transaction.status === "approved" && (
@@ -217,6 +223,7 @@ export default function AdminTransactionsPage() {
                             const txHash = prompt("Transaction hash:");
                             if (txHash) handleComplete(transaction._id, txHash);
                           }}
+                          className="text-xs sm:text-sm"
                         >
                           Complete
                         </Button>

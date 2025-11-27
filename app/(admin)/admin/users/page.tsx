@@ -28,14 +28,12 @@ export default function AdminUsersPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">
-            Manage all platform users
-          </p>
-        </div>
+    <div className="space-y-4 sm:space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold">User Management</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          Manage all platform users
+        </p>
       </div>
 
       {/* Search */}
@@ -67,42 +65,42 @@ export default function AdminUsersPage() {
               {filteredUsers.map((user) => (
                 <div
                   key={user._id}
-                  className="flex items-center justify-between rounded-lg border p-4 hover:bg-accent/50 cursor-pointer"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border p-3 sm:p-4 hover:bg-accent/50 cursor-pointer transition-colors"
                   onClick={() => setSelectedUser(user._id)}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
                       <Mail className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">{user.email}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <p className="font-semibold text-sm sm:text-base break-words">{user.email}</p>
                         {user.role === "super_admin" && (
-                          <Badge variant="secondary">Admin</Badge>
+                          <Badge variant="secondary" className="text-xs">Admin</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Shield className="h-3 w-3" />
-                          KYC: {user.kycStatus}
+                          <span className="hidden sm:inline">KYC: </span>{user.kycStatus}
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {new Date(user.createdAt).toLocaleDateString()}
                         </span>
                         {user.emailVerified ? (
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs">
                             Verified
                           </Badge>
                         ) : (
-                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">
+                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 text-xs">
                             Unverified
                           </Badge>
                         )}
                       </div>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm" onClick={(e) => e.stopPropagation()}>
                     View Details
                   </Button>
                 </div>
@@ -150,7 +148,7 @@ function UserDetailDialog({
 
   return (
     <Dialog open={!!userId} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
           <DialogDescription>

@@ -29,7 +29,7 @@ export default function SwapPage() {
     user?._id ? { userId: user._id } : "skip"
   );
 
-  const calculateExchangeRateAction = useAction((api.actions as any).cryptoPrices?.calculateExchangeRate);
+  const calculateExchangeRateAction = useAction((api.actions as any).crypto_prices?.calculateExchangeRate);
   const createSwapMutation = useMutation(api.swaps.createSwap);
 
   const {
@@ -153,15 +153,15 @@ export default function SwapPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Swap Coins</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Swap Coins</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Exchange one cryptocurrency for another
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Swap Form */}
         <Card>
           <CardHeader>
