@@ -49,11 +49,11 @@ export const getPlatformWallet = query({
     chainId: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    if (args.chainId) {
+    if (args.chainId !== undefined) {
       const wallet = await ctx.db
         .query("platformWallets")
         .withIndex("by_coin_and_chain", (q) =>
-          q.eq("coin", args.coin).eq("chainId", args.chainId)
+          q.eq("coin", args.coin).eq("chainId", args.chainId!)
         )
         .first();
 

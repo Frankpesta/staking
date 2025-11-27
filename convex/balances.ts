@@ -14,19 +14,7 @@ export const getUserBalance = query({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .first();
 
-    if (!balance) {
-      // Create initial balance if it doesn't exist
-      const balanceId = await ctx.db.insert("balances", {
-        userId: args.userId,
-        depositBalance: {},
-        stakedBalance: {},
-        availableBalance: {},
-        updatedAt: Date.now(),
-      });
-      const newBalance = await ctx.db.get(balanceId);
-      return newBalance;
-    }
-
+    // If balance doesn't exist, return null - it should be created via mutation
     return balance;
   },
 });

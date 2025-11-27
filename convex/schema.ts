@@ -11,7 +11,7 @@ export default defineSchema({
       v.literal("pending"),
       v.literal("approved"),
       v.literal("rejected"),
-      v.optional(v.literal("not_started"))
+      v.literal("not_started")
     ),
     kycDocuments: v.array(v.id("kycDocuments")),
     twoFactorEnabled: v.boolean(),

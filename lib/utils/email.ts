@@ -17,7 +17,7 @@ export async function sendWelcomeEmail(
   verificationLink: string
 ) {
   try {
-    const emailHtml = render(WelcomeEmail({ userEmail: to, verificationLink }));
+    const emailHtml = await render(WelcomeEmail({ userEmail: to, verificationLink }));
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -31,7 +31,7 @@ export async function sendWelcomeEmail(
 
 export async function sendEmailVerifiedEmail(to: string) {
   try {
-    const emailHtml = render(EmailVerifiedEmail());
+    const emailHtml = await render(EmailVerifiedEmail());
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -51,7 +51,7 @@ export async function sendDepositApprovedEmail(
   explorerUrl?: string
 ) {
   try {
-    const emailHtml = render(
+    const emailHtml = await render(
       DepositApprovedEmail({ amount, coin, txHash, explorerUrl })
     );
     await resend.emails.send({
@@ -74,7 +74,7 @@ export async function sendWithdrawalProcessedEmail(
   walletAddress: string
 ) {
   try {
-    const emailHtml = render(
+    const emailHtml = await render(
       WithdrawalProcessedEmail({
         amount,
         coin,
@@ -103,7 +103,7 @@ export async function sendStakeMaturedEmail(
   duration: number
 ) {
   try {
-    const emailHtml = render(
+    const emailHtml = await render(
       StakeMaturedEmail({ principal, roi, totalAmount, coin, duration })
     );
     await resend.emails.send({
@@ -119,7 +119,7 @@ export async function sendStakeMaturedEmail(
 
 export async function sendKYCApprovedEmail(to: string) {
   try {
-    const emailHtml = render(KYCApprovedEmail());
+    const emailHtml = await render(KYCApprovedEmail());
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -136,7 +136,7 @@ export async function sendKYCRejectedEmail(
   rejectionReason: string
 ) {
   try {
-    const emailHtml = render(KYCRejectedEmail({ rejectionReason }));
+    const emailHtml = await render(KYCRejectedEmail({ rejectionReason }));
     await resend.emails.send({
       from: FROM_EMAIL,
       to,

@@ -73,6 +73,7 @@ export function useDepositDetection({
         // Check if transaction is to platform wallet
         if (
           tx.to?.toLowerCase() === platformWalletAddress.toLowerCase() &&
+          address &&
           tx.from.toLowerCase() === address.toLowerCase()
         ) {
           processedTxs.current.add(txHash);

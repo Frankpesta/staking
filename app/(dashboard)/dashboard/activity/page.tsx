@@ -11,8 +11,6 @@ import {
   ArrowDown,
   ArrowLeftRight,
   FileText,
-  CheckCircle,
-  XCircle,
   Clock,
 } from "lucide-react";
 
@@ -75,20 +73,36 @@ export default function ActivityPage() {
         </CardHeader>
         <CardContent>
           {activities && activities.length > 0 ? (
-            <div className="space-y-4">
-              {activities.map((activity) => (
-                <div
-                  key={activity._id}
-                  className={`flex items-start gap-4 rounded-lg border-l-4 bg-card p-4 ${getActivityColor(activity.type)}`}
-                >
-                  <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
-                  <div className="flex-1">
-                    <p className="font-medium">{activity.description}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(activity.timestamp).toLocaleString()}
-                    </p>
+            <>
+              <div className="space-y-4">
+                {activities.map((activity: { _id: string; type: string; description: string; timestamp: number }) => (
+                  <div
+                    key={activity._id}
+                    className={`flex items-start gap-4 rounded-lg border-l-4 bg-card p-4 ${getActivityColor(activity.type)}`}
+                  >
+                    <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
+                    <div className="flex-1">
+                      <p className="font-medium">{activity.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(activity.timestamp).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Suggestion: Add pagination or infinite scroll for better UX with many activities.
+              </p>
+            </>
+          ) : (
+            <div className="flex items-center justify-center rounded-lg border bg-muted p-12">
+              <p className="text-sm text-muted-foreground">
+                No activity yet. Deposit funds or start staking to see updates here.
+              </p>
             </div>
-          Suggestion: Add pagination or infinite scroll for better UX with many activities
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

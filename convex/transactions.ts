@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 /**
@@ -169,9 +169,9 @@ export const approveTransaction = mutation({
 });
 
 /**
- * Reject a transaction (admin only)
+ * Reject a transaction (admin only - public mutation)
  */
-export const rejectTransaction = mutation({
+export const rejectTransactionPublic = mutation({
   args: {
     transactionId: v.id("transactions"),
     adminId: v.id("users"),
@@ -208,9 +208,9 @@ export const rejectTransaction = mutation({
 });
 
 /**
- * Complete a transaction (admin only)
+ * Complete a transaction (admin only - public mutation)
  */
-export const completeTransaction = mutation({
+export const completeTransactionPublic = mutation({
   args: {
     transactionId: v.id("transactions"),
     adminId: v.id("users"),
@@ -222,8 +222,9 @@ export const completeTransaction = mutation({
       throw new Error("Transaction not found");
     }
 
-    if (transaction.status !== "approved") {
-      throw new Error("Transaction must be approved first");
+    // Allow completing from pending or approved status
+    if (transaction.status !== "approved" && transaction.status !== "pending") {
+      throw new Error("Transaction must be approved or pending");
     }
 
     await ctx.db.patch(args.transactionId, {
@@ -303,6 +304,95 @@ export const getPendingTransactions = query({
     }
 
     return query.order("desc").collect();
+  },
+});
+
+/**
+ * Complete a transaction (internal - called from actions)
+ */
+export const completeTransaction = internalMutation({
+  args: {
+    transactionId: v.id("transactions"),
+    adminId: v.id("users"),
+    txHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const transaction = await ctx.db.get(args.transactionId);
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+
+    // Allow completing from pending or approved status
+    if (transaction.status !== "approved" && transaction.status !== "pending") {
+      throw new Error("Transaction must be approved or pending");
+    }
+
+    await ctx.db.patch(args.transactionId, {
+      status: "completed",
+      txHash: args.txHash,
+      processedAt: Date.now(),
+      processedBy: args.adminId,
+    });
+
+    // Update balance based on transaction type
+    if (transaction.type === "withdrawal") {
+      await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
+        userId: transaction.userId,
+        coin: transaction.coin,
+        amount: transaction.amount,
+        type: "withdrawal",
+      });
+    }
+
+    // Create activity log
+    await ctx.db.insert("activities", {
+      userId: transaction.userId,
+      type: `${transaction.type}_completed`,
+      description: `${transaction.type} completed: ${transaction.amount} ${transaction.coin}`,
+      metadata: { transactionId: args.transactionId, txHash: args.txHash },
+      timestamp: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
+/**
+ * Reject a transaction (internal - called from actions)
+ */
+export const rejectTransaction = internalMutation({
+  args: {
+    transactionId: v.id("transactions"),
+    adminId: v.id("users"),
+    adminNote: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const transaction = await ctx.db.get(args.transactionId);
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+
+    if (transaction.status !== "pending") {
+      throw new Error("Transaction is not pending");
+    }
+
+    await ctx.db.patch(args.transactionId, {
+      status: "rejected",
+      processedAt: Date.now(),
+      processedBy: args.adminId,
+      adminNote: args.adminNote,
+    });
+
+    // Create activity log
+    await ctx.db.insert("activities", {
+      userId: transaction.userId,
+      type: `${transaction.type}_rejected`,
+      description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}`,
+      metadata: { transactionId: args.transactionId, reason: args.adminNote },
+      timestamp: Date.now(),
+    });
+
+    return { success: true };
   },
 });
 

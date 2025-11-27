@@ -30,8 +30,8 @@ export default function AdminTransactionsPage() {
   );
 
   const approveMutation = useMutation(api.transactions.approveTransaction);
-  const rejectMutation = useMutation(api.transactions.rejectTransaction);
-  const completeMutation = useMutation(api.transactions.completeTransaction);
+  const rejectMutation = useMutation(api.transactions.rejectTransactionPublic);
+  const completeMutation = useMutation(api.transactions.completeTransactionPublic);
 
   const handleApprove = async (transactionId: string) => {
     if (!user?._id) return;

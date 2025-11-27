@@ -23,7 +23,7 @@ export const createUser = action({
     email: v.string(),
     password: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ userId: string; verificationToken: string }> => {
     // Check if user already exists
     const existingUser = await ctx.runQuery(internal.users.getUserByEmail, {
       email: args.email,
@@ -34,7 +34,7 @@ export const createUser = action({
     }
 
     // Hash password
-    const passwordHash = await ctx.runAction(internal.actions.auth.hashPassword, {
+    const passwordHash: string = await ctx.runAction(internal.actions.auth.hashPassword, {
       password: args.password,
     });
 
@@ -45,7 +45,7 @@ export const createUser = action({
     });
 
     // Generate email verification token
-    const verificationToken = await ctx.runAction(
+    const verificationToken: string = await ctx.runAction(
       internal.actions.auth.generateRandomToken,
       {}
     );
@@ -61,10 +61,11 @@ export const createUser = action({
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
-      await ctx.runAction(internal.actions.email.sendWelcomeEmail, {
-        email: args.email,
-        verificationLink,
-      });
+      // Email sending would go here - requires email action to be implemented
+      // await ctx.runAction(internal.actions.email.sendWelcomeEmail, {
+      //   email: args.email,
+      //   verificationLink,
+      // });
     } catch (error) {
       // Log error but don't fail user creation - email sending is optional
       console.error("Failed to send welcome email:", error);
@@ -85,7 +86,7 @@ export const login = action({
     email: v.string(),
     password: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ token: string; user: { _id: string; email: string; role: string; emailVerified: boolean; kycStatus: string } }> => {
     // Find user
     const user = await ctx.runQuery(internal.users.getUserByEmail, {
       email: args.email,
@@ -106,7 +107,7 @@ export const login = action({
     }
 
     // Generate session token
-    const token = await ctx.runAction(internal.actions.auth.generateToken, {
+    const token: string = await ctx.runAction(internal.actions.auth.generateToken, {
       userId: user._id,
       role: user.role,
     });
@@ -205,7 +206,7 @@ export const requestPasswordReset = action({
   args: {
     email: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ success: boolean; resetToken?: string }> => {
     // Find user
     const user = await ctx.runQuery(internal.users.getUserByEmail, {
       email: args.email,
@@ -217,7 +218,7 @@ export const requestPasswordReset = action({
     }
 
     // Generate reset token
-    const resetToken = await ctx.runAction(
+    const resetToken: string = await ctx.runAction(
       internal.actions.auth.generateRandomToken,
       {}
     );

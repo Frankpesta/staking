@@ -43,7 +43,7 @@ export const initializeSettings = mutation({
  */
 export const getAppSettings = query({
   handler: async (ctx) => {
-    let settings = await ctx.db.query("appSettings").first();
+    const settings = await ctx.db.query("appSettings").first();
 
     if (!settings) {
       // Initialize if not exists - will be created on first mutation
@@ -97,9 +97,28 @@ export const updateAppSettings = mutation({
     let settings = await ctx.db.query("appSettings").first();
 
     if (!settings) {
-      // Initialize first
-      await initializeSettings(ctx, {});
-      settings = await ctx.db.query("appSettings").first();
+      // Initialize first - inline the initialization logic
+      const settingsId = await ctx.db.insert("appSettings", {
+        platformPaused: false,
+        supportedCoins: DEFAULT_COINS.map((coin) => ({
+          symbol: coin.symbol,
+          name: coin.name,
+          chainId: coin.chainId,
+          isNative: coin.isNative,
+          contractAddress: coin.contractAddress,
+          decimals: coin.decimals,
+          minDeposit: coin.minDeposit,
+          minWithdrawal: coin.minWithdrawal,
+          depositEnabled: coin.depositEnabled,
+          withdrawalEnabled: coin.withdrawalEnabled,
+        })),
+        stakingOptions: DEFAULT_STAKING_OPTIONS.map((option) => ({
+          duration: option.duration,
+          roiPercentage: option.roiPercentage,
+        })),
+        maintenanceMode: false,
+      });
+      settings = await ctx.db.get(settingsId);
       if (!settings) {
         throw new Error("Failed to initialize settings");
       }

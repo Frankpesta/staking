@@ -7,8 +7,8 @@ import { Users, DollarSign, TrendingUp, FileText, Clock, CheckCircle, XCircle } 
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function AdminOverviewPage() {
-  const users = useQuery(api.users.listUsers);
-  const pendingTransactions = useQuery(api.transactions.getPendingTransactions);
+  const users = useQuery(api.users.listUsers, {});
+  const pendingTransactions = useQuery(api.transactions.getPendingTransactions, {});
   const pendingKYC = useQuery(api.kyc.getPendingKYCDocuments);
   const tickets = useQuery(api.support.getAllTickets, { status: "open" });
   const activeStakingPools = useQuery(api.staking.getAllStakingPools, { status: "active" });

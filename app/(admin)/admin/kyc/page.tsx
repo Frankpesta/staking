@@ -9,12 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, XCircle, FileText, User } from "lucide-react";
-import { useQuery as useUserQuery } from "convex/react";
-import { useMutation as useFileMutation } from "convex/react";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default function AdminKYCPage() {
   const { user } = useAuth();
-  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Id<"kycDocuments"> | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
   const pendingDocuments = useQuery(api.kyc.getPendingKYCDocuments);
@@ -78,9 +77,6 @@ export default function AdminKYCPage() {
           {pendingDocuments && pendingDocuments.length > 0 ? (
             <div className="space-y-4">
               {pendingDocuments.map((doc) => {
-                const documentUser = useUserQuery(api.users.getUserById, {
-                  userId: doc.userId,
-                });
                 return (
                   <div
                     key={doc._id}
@@ -95,11 +91,10 @@ export default function AdminKYCPage() {
                           </span>
                           <Badge>Pending</Badge>
                         </div>
-                        {documentUser && (
-                          <p className="text-sm text-muted-foreground">
-                            User: {documentUser.email}
-                          </p>
-                        )}
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          User ID: {doc.userId}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Uploaded: {new Date(doc.uploadedAt).toLocaleString()}
                         </p>

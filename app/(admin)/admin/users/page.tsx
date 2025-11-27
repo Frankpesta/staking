@@ -22,7 +22,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   
-  const users = useQuery(api.users.listUsers);
+  const users = useQuery(api.users.listUsers, {});
   const filteredUsers = users?.filter((user) =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );

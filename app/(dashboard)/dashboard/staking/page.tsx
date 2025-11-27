@@ -252,7 +252,7 @@ export default function StakingPage() {
                 <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-900 dark:bg-blue-950 dark:text-blue-100">
                   <p className="font-medium">Note:</p>
                   <p className="mt-1">
-                    Funds will be locked for {selectedDuration} days. You'll receive principal + ROI at maturity.
+                    Funds will be locked for {selectedDuration} days. You&rsquo;ll receive principal + ROI at maturity.
                   </p>
                 </div>
               </>

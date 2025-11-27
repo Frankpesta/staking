@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { MessageSquare, Send } from "lucide-react";
 import {
   Dialog,
@@ -18,23 +17,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import type { Id } from "@/convex/_generated/dataModel";
+
+type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+
 export default function AdminSupportPage() {
   const { user } = useAuth();
-  const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<Id<"supportTickets"> | null>(null);
   const [responseMessage, setResponseMessage] = useState("");
 
-  const tickets = useQuery(api.support.getAllTickets);
+  const tickets = useQuery(api.support.getAllTickets, {});
   const respondMutation = useMutation(api.support.respondToTicket);
   const updateStatusMutation = useMutation(api.support.updateTicketStatus);
 
-  const handleRespond = async (ticketId: string) => {
+  const handleRespond = async (ticketId: Id<"supportTickets">) => {
     if (!user?._id || !responseMessage.trim()) {
       alert("Please enter a response");
       return;
     }
     try {
       await respondMutation({
-        ticketId: ticketId as any,
+        ticketId,
         adminId: user._id,
         message: responseMessage,
       });
@@ -45,11 +48,11 @@ export default function AdminSupportPage() {
     }
   };
 
-  const handleStatusChange = async (ticketId: string, status: string) => {
+  const handleStatusChange = async (ticketId: Id<"supportTickets">, status: TicketStatus) => {
     try {
       await updateStatusMutation({
-        ticketId: ticketId as any,
-        status: status as any,
+        ticketId,
+        status,
       });
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to update status");
@@ -104,9 +107,6 @@ export default function AdminSupportPage() {
           {tickets && tickets.length > 0 ? (
             <div className="space-y-4">
               {tickets.map((ticket) => {
-                const ticketUser = useQuery(api.users.getUserById, {
-                  userId: ticket.userId,
-                });
                 return (
                   <div
                     key={ticket._id}
@@ -124,11 +124,9 @@ export default function AdminSupportPage() {
                             {ticket.priority}
                           </Badge>
                         </div>
-                        {ticketUser && (
-                          <p className="text-sm text-muted-foreground">
-                            From: {ticketUser.email}
-                          </p>
-                        )}
+                        <p className="text-sm text-muted-foreground">
+                          User ID: {ticket.userId}
+                        </p>
                         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                           {ticket.message}
                         </p>
@@ -177,14 +175,14 @@ function TicketDetailDialog({
   responseMessage,
   setResponseMessage,
 }: {
-  ticketId: string;
+  ticketId: Id<"supportTickets">;
   onClose: () => void;
-  onRespond: (ticketId: string) => void;
-  onStatusChange: (ticketId: string, status: string) => void;
+  onRespond: (ticketId: Id<"supportTickets">) => void;
+  onStatusChange: (ticketId: Id<"supportTickets">, status: TicketStatus) => void;
   responseMessage: string;
   setResponseMessage: (msg: string) => void;
 }) {
-  const tickets = useQuery(api.support.getAllTickets);
+  const tickets = useQuery(api.support.getAllTickets, {});
   const ticket = tickets?.find((t) => t._id === ticketId);
   const ticketUser = useQuery(
     api.users.getUserById,

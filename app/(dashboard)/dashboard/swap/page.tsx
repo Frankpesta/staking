@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useState, useEffect, useCallback } from "react";
+import { useMutation, useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useForm } from "react-hook-form";
@@ -11,14 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CoinSelector } from "@/components/shared/CoinSelector";
-import { ArrowLeftRight } from "lucide-react";
-import { DEFAULT_COINS } from "@/lib/constants";
+import { ArrowLeftRight, Loader2 } from "lucide-react";
 
 export default function SwapPage() {
   const { user } = useAuth();
   const [fromCoin, setFromCoin] = useState<string>("");
   const [toCoin, setToCoin] = useState<string>("");
   const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [fromPriceUSD, setFromPriceUSD] = useState<number | null>(null);
+  const [toPriceUSD, setToPriceUSD] = useState<number | null>(null);
+  const [isLoadingRate, setIsLoadingRate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -27,13 +29,7 @@ export default function SwapPage() {
     user?._id ? { userId: user._id } : "skip"
   );
 
-  const getExchangeRateQuery = useQuery(
-    api.swaps.getExchangeRate,
-    fromCoin && toCoin && fromCoin !== toCoin
-      ? { fromCoin, toCoin }
-      : "skip"
-  );
-
+  const calculateExchangeRateAction = useAction((api.actions as any).cryptoPrices?.calculateExchangeRate);
   const createSwapMutation = useMutation(api.swaps.createSwap);
 
   const {
@@ -50,16 +46,58 @@ export default function SwapPage() {
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const fromBalance = fromCoin ? (availableBalance?.[fromCoin] || 0) : 0;
 
-  useEffect(() => {
-    if (getExchangeRateQuery?.rate) {
-      setExchangeRate(getExchangeRateQuery.rate);
+  // Fetch real-time exchange rate when coins change
+  const fetchExchangeRate = useCallback(async () => {
+    if (!fromCoin || !toCoin || fromCoin === toCoin) {
+      setExchangeRate(1);
+      setFromPriceUSD(null);
+      setToPriceUSD(null);
+      return;
     }
-  }, [getExchangeRateQuery]);
+
+    setIsLoadingRate(true);
+    setError(null);
+
+    try {
+      const result = await calculateExchangeRateAction({
+        fromCoin,
+        toCoin,
+      });
+
+      setExchangeRate(result.rate);
+      setFromPriceUSD(result.fromPriceUSD);
+      setToPriceUSD(result.toPriceUSD);
+    } catch (err) {
+      console.error("Error fetching exchange rate:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch exchange rate");
+      setExchangeRate(1);
+      setFromPriceUSD(null);
+      setToPriceUSD(null);
+    } finally {
+      setIsLoadingRate(false);
+    }
+  }, [fromCoin, toCoin, calculateExchangeRateAction]);
+
+  useEffect(() => {
+    fetchExchangeRate();
+  }, [fetchExchangeRate]);
 
   const calculateToAmount = () => {
     if (!amount || !exchangeRate) return 0;
+    // This calculation ensures USD-based swaps work correctly
+    // If swapping 10 USD to ETH, and ETH is $3000, you get 10/3000 = 0.00333 ETH
     return amount * exchangeRate;
   };
+
+  const calculateUSDValue = (amount: number, coin: string, priceUSD: number | null) => {
+    if (!priceUSD) return null;
+    // USD is always 1:1
+    if (coin.toUpperCase() === "USD") return amount;
+    return amount * priceUSD;
+  };
+
+  const fromUSDValue = calculateUSDValue(amount || 0, fromCoin, fromPriceUSD);
+  const toUSDValue = calculateUSDValue(calculateToAmount(), toCoin, toPriceUSD);
 
   const swapCoins = () => {
     const temp = fromCoin;
@@ -67,6 +105,8 @@ export default function SwapPage() {
     setToCoin(temp);
     setValue("fromCoin", toCoin);
     setValue("toCoin", temp);
+    // Reset amount when swapping coins
+    setValue("amount", 0);
   };
 
   const onSubmit = async (data: SwapInput) => {
@@ -84,13 +124,22 @@ export default function SwapPage() {
 
     try {
       setError(null);
+      setIsLoadingRate(true);
+      
+      // Recalculate exchange rate at submission time to ensure accuracy
+      const latestRate = await calculateExchangeRateAction({
+        fromCoin: data.fromCoin,
+        toCoin: data.toCoin,
+      });
+
       await createSwapMutation({
         userId: user._id,
         fromCoin: data.fromCoin,
         toCoin: data.toCoin,
         amount: data.amount,
-        exchangeRate,
+        exchangeRate: latestRate.rate,
       });
+      
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -98,6 +147,8 @@ export default function SwapPage() {
       }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create swap request");
+    } finally {
+      setIsLoadingRate(false);
     }
   };
 
@@ -146,9 +197,16 @@ export default function SwapPage() {
                   <p className="text-sm text-destructive">{errors.fromCoin.message}</p>
                 )}
                 {fromCoin && (
-                  <p className="text-xs text-muted-foreground">
-                    Available: {fromBalance.toFixed(6)} {fromCoin}
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      Available: {fromBalance.toFixed(6)} {fromCoin}
+                    </p>
+                    {fromPriceUSD !== null && (
+                      <p className="text-xs text-muted-foreground">
+                        ≈ ${(fromBalance * fromPriceUSD).toFixed(2)} USD
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -224,30 +282,79 @@ export default function SwapPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {amount && fromCoin && toCoin && fromCoin !== toCoin ? (
+            {isLoadingRate && fromCoin && toCoin && fromCoin !== toCoin ? (
+              <div className="flex items-center justify-center rounded-lg border bg-muted p-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Loading exchange rate...</span>
+              </div>
+            ) : amount && fromCoin && toCoin && fromCoin !== toCoin ? (
               <>
-                <div className="space-y-2 rounded-md border p-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">You Send</span>
-                    <span className="font-medium">{amount.toFixed(6)} {fromCoin}</span>
+                <div className="space-y-3 rounded-md border p-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">You Send</span>
+                      <div className="text-right">
+                        <span className="font-medium">{amount.toFixed(6)} {fromCoin}</span>
+                        {fromUSDValue !== null && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            (≈ ${fromUSDValue.toFixed(2)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {fromPriceUSD !== null && toPriceUSD !== null && (
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Price: 1 {fromCoin} = ${fromPriceUSD.toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Exchange Rate</span>
-                    <span className="font-medium">1 {fromCoin} = {exchangeRate.toFixed(6)} {toCoin}</span>
+
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">Exchange Rate</span>
+                      <span className="font-medium">
+                        1 {fromCoin} = {exchangeRate.toFixed(8)} {toCoin}
+                      </span>
+                    </div>
+                    {fromPriceUSD !== null && toPriceUSD !== null && (
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Based on USD prices</span>
+                        <span>1 {toCoin} = ${toPriceUSD.toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
+
                   <div className="border-t pt-2 mt-2">
                     <div className="flex justify-between">
                       <span className="font-semibold">You Receive</span>
-                      <span className="font-bold text-lg text-green-600">
-                        {calculateToAmount().toFixed(6)} {toCoin}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-bold text-lg text-green-600">
+                          {calculateToAmount().toFixed(8)} {toCoin}
+                        </span>
+                        {toUSDValue !== null && (
+                          <span className="block text-xs text-muted-foreground mt-1">
+                            ≈ ${toUSDValue.toFixed(2)} USD
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Show USD equivalence */}
+                  {fromUSDValue !== null && toUSDValue !== null && (
+                    <div className="rounded-md bg-green-50 p-2 text-xs text-green-900 dark:bg-green-950 dark:text-green-100">
+                      <p className="font-medium">USD Value:</p>
+                      <p>
+                        You&rsquo;re swapping ${fromUSDValue.toFixed(2)} worth of {fromCoin} for ${toUSDValue.toFixed(2)} worth of {toCoin}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-900 dark:bg-blue-950 dark:text-blue-100">
                   <p className="font-medium">Note:</p>
                   <p className="mt-1">
-                    Swap requests require admin approval. The exchange rate may vary slightly at the time of processing.
+                    Exchange rates are fetched in real-time from CoinGecko. Swap requests require admin approval. 
+                    The final rate will be recalculated at the time of processing to ensure accuracy.
                   </p>
                 </div>
               </>

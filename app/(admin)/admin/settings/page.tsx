@@ -23,7 +23,7 @@ export default function AdminSettingsPage() {
     if (settings) {
       setPlatformPaused(settings.platformPaused);
       setMaintenanceMode(settings.maintenanceMode);
-      setAnnouncementMessage(settings.announcementMessage || "");
+      setAnnouncementMessage((settings as any).announcementMessage || "");
     }
   }, [settings]);
 

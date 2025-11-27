@@ -135,6 +135,19 @@ export const DEFAULT_COINS = [
     depositEnabled: true,
     withdrawalEnabled: true,
   },
+  // USD (fiat currency)
+  {
+    symbol: "USD",
+    name: "US Dollar",
+    chainId: 1,
+    isNative: false,
+    contractAddress: undefined,
+    decimals: 2,
+    minDeposit: 1,
+    minWithdrawal: 1,
+    depositEnabled: true,
+    withdrawalEnabled: true,
+  },
   // Stablecoins
   {
     symbol: "USDT",

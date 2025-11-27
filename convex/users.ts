@@ -19,9 +19,12 @@ export const login = mutation({
     email: v.string(),
     password: v.string(),
   },
-  handler: async (ctx, args) => {
-    // Delegate to action for Node.js APIs
-    return await ctx.scheduler.runAfter(0, internal.actions.users.login, args);
+  handler: async (ctx, args): Promise<never> => {
+    // Note: This mutation wrapper is deprecated - use actions/users.login directly from frontend
+    // Delegate to action for Node.js APIs (non-blocking)
+    // Note: This mutation is deprecated - use actions/users.login directly
+    // ctx.scheduler.runAfter(0, internal.actions.users.login, args);
+    throw new Error("Use actions/users.login action instead of this mutation");
   },
 });
 
@@ -102,9 +105,10 @@ export const verifyEmail = mutation({
 
     // Send confirmation email (non-blocking)
     try {
-      await ctx.scheduler.runAfter(0, internal.actions.email.sendEmailVerifiedEmail, {
-        email: user.email,
-      });
+      // Email sending would go here - requires email action to be implemented
+      // await ctx.scheduler.runAfter(0, internal.actions.email.sendEmailVerifiedEmail, {
+      //   email: user.email,
+      // });
     } catch (error) {
       // Don't fail verification if email fails
       console.error("Failed to send verification confirmation email:", error);
@@ -133,11 +137,8 @@ export const requestPasswordReset = mutation({
       return { success: true };
     }
 
-    // Generate reset token using action
-    const resetToken = await ctx.runAction(
-      internal.actions.auth.generateRandomToken,
-      {}
-    );
+    // Generate reset token (simple random token for Convex mutations)
+    const resetToken = `${Math.random().toString(36).substring(2)}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
     await ctx.db.insert("passwordResetTokens", {
       userId: user._id,
       token: resetToken,
@@ -161,9 +162,12 @@ export const resetPassword = mutation({
     token: v.string(),
     newPassword: v.string(),
   },
-  handler: async (ctx, args) => {
-    // Delegate to action for Node.js APIs
-    return await ctx.scheduler.runAfter(0, internal.actions.users.resetPassword, args);
+  handler: async (ctx, args): Promise<never> => {
+    // Note: This mutation wrapper is deprecated - use actions/users.resetPassword directly from frontend
+    // Delegate to action for Node.js APIs (non-blocking)
+    // Note: This mutation is deprecated - use actions/users.resetPassword directly  
+    // ctx.scheduler.runAfter(0, internal.actions.users.resetPassword, args);
+    throw new Error("Use actions/users.resetPassword action instead of this mutation");
   },
 });
 

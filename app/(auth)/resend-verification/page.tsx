@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +20,7 @@ type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
 export default function ResendVerificationPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const createUserMutation = useMutation(api.users.createUser);
+  const createUserAction = useAction(api.actions.users.createUser);
 
   const {
     register,
@@ -49,7 +49,7 @@ export default function ResendVerificationPage() {
           <CardHeader>
             <CardTitle>Verification email sent</CardTitle>
             <CardDescription>
-              If an account exists with that email and hasn't been verified, we've sent a new verification email.
+              If an account exists with that email and hasn&rsquo;t been verified, we&rsquo;ve sent a new verification email.
             </CardDescription>
           </CardHeader>
           <CardContent>

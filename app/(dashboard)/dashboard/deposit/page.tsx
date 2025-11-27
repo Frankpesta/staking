@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 
 // Get unique coins (group by symbol, prefer native coins)
 const getUniqueCoins = () => {
-  const coinMap = new Map<string, typeof DEFAULT_COINS[0]>();
+  const coinMap = new Map<string, (typeof DEFAULT_COINS)[number]>();
   
   DEFAULT_COINS.forEach((coin) => {
     const key = coin.symbol;
@@ -291,7 +291,7 @@ export default function DepositPage() {
             </div>
             <CardTitle className="text-2xl">Connect Wallet to Continue</CardTitle>
             <CardDescription>
-              You're depositing <span className="font-semibold">{amount} {selectedCoinConfig?.symbol}</span>. 
+              You&rsquo;re depositing <span className="font-semibold">{amount} {selectedCoinConfig?.symbol}</span>. 
               Please connect your wallet to view the deposit address.
             </CardDescription>
           </CardHeader>
@@ -413,13 +413,17 @@ export default function DepositPage() {
             <div className="space-y-2">
               <p className="text-sm font-medium">Network</p>
               <p className="text-sm text-muted-foreground">
-                {selectedCoinConfig?.chainId === 1 && "Ethereum Mainnet"}
-                {selectedCoinConfig?.chainId === 137 && "Polygon"}
-                {selectedCoinConfig?.chainId === 56 && "BNB Smart Chain"}
-                {selectedCoinConfig?.chainId === 43114 && "Avalanche C-Chain"}
-                {selectedCoinConfig?.chainId === 42161 && "Arbitrum One"}
-                {selectedCoinConfig?.chainId === 10 && "Optimism"}
-                {selectedCoinConfig?.chainId === 8453 && "Base"}
+                {(() => {
+                  const chainId = selectedCoinConfig?.chainId;
+                  if (chainId === 1) return "Ethereum Mainnet";
+                  if (chainId === 137) return "Polygon";
+                  if (chainId === 56) return "BNB Smart Chain";
+                  if (chainId === 43114) return "Avalanche C-Chain";
+                  if (chainId === 42161) return "Arbitrum One";
+                  if (chainId === 10) return "Optimism";
+                  if (chainId === 8453) return "Base";
+                  return "Unknown Network";
+                })()}
               </p>
             </div>
             {selectedCoinConfig?.minDeposit && (

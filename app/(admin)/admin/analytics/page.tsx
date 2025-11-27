@@ -22,16 +22,16 @@ import {
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe"];
 
 export default function AdminAnalyticsPage() {
-  const users = useQuery(api.users.listUsers);
-  const transactions = useQuery(api.transactions.getPendingTransactions);
-  const stakingPools = useQuery(api.staking.getAllStakingPools);
+  const users = useQuery(api.users.listUsers, {});
+  const transactions = useQuery(api.transactions.getPendingTransactions, {});
+  const stakingPools = useQuery(api.staking.getAllStakingPools, {});
 
   // Calculate statistics
   const totalUsers = users?.length || 0;
-  const verifiedUsers = users?.filter((u) => u.emailVerified).length || 0;
-  const kycApproved = users?.filter((u) => u.kycStatus === "approved").length || 0;
+  const verifiedUsers = users?.filter((u: { emailVerified: boolean }) => u.emailVerified).length || 0;
+  const kycApproved = users?.filter((u: { kycStatus: string }) => u.kycStatus === "approved").length || 0;
   const totalStakingPools = stakingPools?.length || 0;
-  const activePools = stakingPools?.filter((p) => p.status === "active").length || 0;
+  const activePools = stakingPools?.filter((p: { status: string }) => p.status === "active").length || 0;
 
   // Mock data for charts - in production, calculate from actual data
   const transactionTypeData = [
@@ -124,9 +124,10 @@ export default function AdminAnalyticsPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
+                  label={(props: any) => {
+                    const percent = props.percent ?? 0;
+                    return `${props.name} ${(percent * 100).toFixed(0)}%`;
+                  }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -154,9 +155,10 @@ export default function AdminAnalyticsPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
+                  label={(props: any) => {
+                    const percent = props.percent ?? 0;
+                    return `${props.name} ${(percent * 100).toFixed(0)}%`;
+                  }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"

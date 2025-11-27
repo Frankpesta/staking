@@ -136,7 +136,10 @@ export const approveSwap = mutation({
 });
 
 /**
- * Get swap exchange rate (can be from external API or admin-set)
+ * Get swap exchange rate using real-time prices from CoinGecko
+ * Note: This query now returns a placeholder. The actual rate calculation
+ * should be done on the client side using the calculateExchangeRate action
+ * to ensure real-time prices and proper USD-based calculations.
  */
 export const getExchangeRate = query({
   args: {
@@ -144,12 +147,13 @@ export const getExchangeRate = query({
     toCoin: v.string(),
   },
   handler: async (ctx, args) => {
-    // In production, fetch from CoinGecko or similar API
-    // For now, return a mock rate
-    // This should be replaced with actual price feed integration
+    // This is a placeholder. The client should use the calculateExchangeRate action
+    // from convex/actions/crypto-prices.ts to get real-time rates.
+    // We return a placeholder here to maintain compatibility.
     return {
-      rate: 1.0, // Mock rate
+      rate: 1.0, // Placeholder - client should calculate using action
       timestamp: Date.now(),
+      note: "Use calculateExchangeRate action for real-time rates",
     };
   },
 });
