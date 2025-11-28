@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { usePortfolioValue } from "@/lib/hooks/usePortfolioValue";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, ArrowUp } from "lucide-react";
 import { staggerFadeIn } from "@/lib/utils/animations";
@@ -19,6 +20,10 @@ export default function DashboardPage() {
     api.activities.getUserActivities,
     user?._id ? { userId: user._id, limit: 5 } : "skip"
   );
+
+  // Calculate total portfolio value in USD using real-time prices
+  // Must be called before any early returns (React Hook rules)
+  const portfolioValue = usePortfolioValue(balance || undefined);
 
   useEffect(() => {
     if (balance) {
@@ -58,15 +63,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // Calculate totals from balance data (handle loading state)
-  const availableBalanceData = balance?.availableBalance as Record<string, number> | undefined;
-  const stakedBalanceData = balance?.stakedBalance as Record<string, number> | undefined;
-  const depositBalanceData = balance?.depositBalance as Record<string, number> | undefined;
-
-  const totalAvailable = Object.values(availableBalanceData || {}).reduce((a, b) => a + b, 0);
-  const totalStaked = Object.values(stakedBalanceData || {}).reduce((a, b) => a + b, 0);
-  const totalDeposited = Object.values(depositBalanceData || {}).reduce((a, b) => a + b, 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -114,10 +110,17 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold break-words">
-                ${totalAvailable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {portfolioValue.isLoading ? (
+                  <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
+                ) : (
+                  `$${portfolioValue.totalAvailable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Ready to stake or withdraw
+                {portfolioValue.lastUpdated && (
+                  <span className="block mt-1">Updated {new Date(portfolioValue.lastUpdated).toLocaleTimeString()}</span>
+                )}
               </p>
             </CardContent>
           </Card>
@@ -129,7 +132,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold break-words">
-                ${totalStaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {portfolioValue.isLoading ? (
+                  <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
+                ) : (
+                  `$${portfolioValue.totalStaked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Currently staking
@@ -144,7 +151,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold break-words">
-                ${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {portfolioValue.isLoading ? (
+                  <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
+                ) : (
+                  `$${portfolioValue.totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 All-time deposits
