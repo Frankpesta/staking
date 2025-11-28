@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
+import { Wallet, TrendingUp, ArrowUp } from "lucide-react";
 import { staggerFadeIn } from "@/lib/utils/animations";
 import { StaggerChildren } from "@/components/animations/StaggerChildren";
 

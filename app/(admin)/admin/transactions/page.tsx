@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ExternalLink, CheckCircle, XCircle, Clock, Info, Copy } from "lucide-react";
 import { SUPPORTED_CHAINS } from "@/lib/constants";
 import {
   Dialog,
@@ -143,6 +143,32 @@ export default function AdminTransactionsPage() {
         </CardContent>
       </Card>
 
+      {/* Manual Withdrawal Instructions */}
+      {pendingTransactions && pendingTransactions.some(t => t.type === "withdrawal" && t.status === "pending") && (
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+              <Info className="h-5 w-5" />
+              Manual Withdrawal Process
+            </CardTitle>
+            <CardDescription className="text-blue-800 dark:text-blue-200">
+              Withdrawals are processed manually. Follow these steps:
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm text-blue-900 dark:text-blue-100 space-y-2">
+            <ol className="list-decimal list-inside space-y-1 ml-2">
+              <li>Review the withdrawal request and verify the user&apos;s balance</li>
+              <li>Click &quot;Approve&quot; to approve the withdrawal</li>
+              <li>Send the funds manually from your platform wallet to the user&apos;s address</li>
+              <li>After the transaction is confirmed on-chain, click &quot;Complete&quot; and enter the transaction hash</li>
+            </ol>
+            <p className="mt-3 text-xs text-blue-700 dark:text-blue-300">
+              <strong>Note:</strong> Always verify the recipient address and amount before sending funds.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Transactions */}
       <Card>
         <CardHeader>
@@ -150,7 +176,7 @@ export default function AdminTransactionsPage() {
             Pending Transactions ({pendingTransactions?.length || 0})
           </CardTitle>
           <CardDescription>
-            Review and approve or reject transactions
+            Review and approve or reject transactions. Withdrawals require manual processing.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -175,9 +201,40 @@ export default function AdminTransactionsPage() {
                           Amount: {transaction.amount.toFixed(6)} {transaction.coin}
                         </p>
                         {transaction.walletAddress && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Address: {transaction.walletAddress.slice(0, 10)}...
-                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-muted-foreground">
+                              To: {transaction.walletAddress.slice(0, 10)}...{transaction.walletAddress.slice(-8)}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5"
+                              onClick={() => {
+                                navigator.clipboard.writeText(transaction.walletAddress!);
+                                alert("Address copied!");
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                        {transaction.type === "withdrawal" && transaction.fromAddress && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-muted-foreground">
+                              From: {transaction.fromAddress.slice(0, 10)}...{transaction.fromAddress.slice(-8)}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5"
+                              onClick={() => {
+                                navigator.clipboard.writeText(transaction.fromAddress!);
+                                alert("Address copied!");
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
                         )}
                         {transaction.txHash && (
                           <a
@@ -220,12 +277,14 @@ export default function AdminTransactionsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            const txHash = prompt("Transaction hash:");
-                            if (txHash) handleComplete(transaction._id, txHash);
+                            const txHash = prompt("Enter the transaction hash from the blockchain:\n\nAfter sending funds manually, paste the transaction hash here:");
+                            if (txHash && txHash.trim()) {
+                              handleComplete(transaction._id, txHash.trim());
+                            }
                           }}
                           className="text-xs sm:text-sm"
                         >
-                          Complete
+                          Complete (Enter TX Hash)
                         </Button>
                       )}
                     </div>

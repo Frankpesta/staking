@@ -150,7 +150,6 @@ export default defineSchema({
     coin: v.string(),
     chainId: v.number(),
     address: v.string(),
-    privateKeyEnvVar: v.string(), // Reference to env var name, not actual key
     isActive: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),

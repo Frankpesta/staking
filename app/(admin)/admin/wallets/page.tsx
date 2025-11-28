@@ -24,7 +24,6 @@ const walletSchema = z.object({
   coin: z.string().min(1, "Coin is required"),
   chainId: z.number().min(1, "Chain ID is required"),
   address: z.string().min(1, "Address is required"),
-  privateKeyEnvVar: z.string().min(1, "Environment variable name is required"),
 });
 
 type WalletInput = z.infer<typeof walletSchema>;
@@ -56,11 +55,14 @@ export default function AdminWalletsPage() {
           coin: data.coin,
           chainId: data.chainId,
           address: data.address,
-          privateKeyEnvVar: data.privateKeyEnvVar,
         });
         setEditingWallet(null);
       } else {
-        await createWalletMutation(data);
+        await createWalletMutation({
+          coin: data.coin,
+          chainId: data.chainId,
+          address: data.address,
+        });
       }
       reset();
       setIsOpen(false);
@@ -74,7 +76,6 @@ export default function AdminWalletsPage() {
     setValue("coin", wallet.coin);
     setValue("chainId", wallet.chainId);
     setValue("address", wallet.address);
-    setValue("privateKeyEnvVar", wallet.privateKeyEnvVar);
     setIsOpen(true);
   };
 
@@ -153,20 +154,8 @@ export default function AdminWalletsPage() {
                 {errors.address && (
                   <p className="text-sm text-destructive">{errors.address.message}</p>
                 )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Private Key Env Var</label>
-                <Input
-                  placeholder="WALLET_PRIVATE_KEY_ETH"
-                  {...register("privateKeyEnvVar")}
-                />
-                {errors.privateKeyEnvVar && (
-                  <p className="text-sm text-destructive">
-                    {errors.privateKeyEnvVar.message}
-                  </p>
-                )}
                 <p className="text-xs text-muted-foreground">
-                  Name of the environment variable containing the private key
+                  Platform wallet address for receiving deposits. Withdrawals are processed manually by admins.
                 </p>
               </div>
               <div className="flex justify-end gap-2">
@@ -196,7 +185,7 @@ export default function AdminWalletsPage() {
         <CardHeader>
           <CardTitle>Configured Wallets</CardTitle>
           <CardDescription>
-            Platform wallets for receiving user deposits
+            Platform wallets for receiving user deposits. Withdrawals are processed manually.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -237,9 +226,6 @@ export default function AdminWalletsPage() {
                         )}
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Env Var: {wallet.privateKeyEnvVar}
-                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button

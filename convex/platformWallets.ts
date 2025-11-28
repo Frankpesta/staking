@@ -9,7 +9,6 @@ export const createPlatformWallet = mutation({
     coin: v.string(),
     chainId: v.number(),
     address: v.string(),
-    privateKeyEnvVar: v.string(),
   },
   handler: async (ctx, args) => {
     // Check if wallet already exists for this coin/chain
@@ -30,7 +29,6 @@ export const createPlatformWallet = mutation({
       coin: args.coin,
       chainId: args.chainId,
       address: args.address,
-      privateKeyEnvVar: args.privateKeyEnvVar,
       isActive: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -90,7 +88,6 @@ export const updatePlatformWallet = mutation({
     coin: v.optional(v.string()),
     chainId: v.optional(v.number()),
     address: v.optional(v.string()),
-    privateKeyEnvVar: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -123,7 +120,6 @@ export const updatePlatformWallet = mutation({
       coin?: string;
       chainId?: number;
       address?: string;
-      privateKeyEnvVar?: string;
       isActive?: boolean;
       updatedAt: number;
     } = {
@@ -138,9 +134,6 @@ export const updatePlatformWallet = mutation({
     }
     if (args.address !== undefined) {
       updates.address = args.address;
-    }
-    if (args.privateKeyEnvVar !== undefined) {
-      updates.privateKeyEnvVar = args.privateKeyEnvVar;
     }
     if (args.isActive !== undefined) {
       updates.isActive = args.isActive;

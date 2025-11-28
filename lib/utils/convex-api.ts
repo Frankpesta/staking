@@ -84,9 +84,6 @@ export const convexApi = api as any as {
       verifyToken?: any;
       generateRandomToken?: any;
     };
-    blockchain?: {
-      processWithdrawal?: any;
-    };
     crypto_prices?: {
       getCryptoPriceUSD?: any;
       getCryptoPricesUSD?: any;

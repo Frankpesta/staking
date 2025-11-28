@@ -124,7 +124,6 @@ export interface PlatformWallet {
   coin: string;
   chainId: number;
   address: string;
-  privateKeyEnvVar: string;
   isActive: boolean;
   createdAt: number;
   updatedAt: number;

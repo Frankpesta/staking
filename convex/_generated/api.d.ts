@@ -9,7 +9,6 @@
  */
 
 import type * as actions_auth from "../actions/auth.js";
-import type * as actions_blockchain from "../actions/blockchain.js";
 import type * as actions_crypto_prices from "../actions/crypto_prices.js";
 import type * as actions_email from "../actions/email.js";
 import type * as actions_users from "../actions/users.js";
@@ -34,7 +33,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/auth": typeof actions_auth;
-  "actions/blockchain": typeof actions_blockchain;
   "actions/crypto_prices": typeof actions_crypto_prices;
   "actions/email": typeof actions_email;
   "actions/users": typeof actions_users;
