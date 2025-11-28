@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useMutation, useAction, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CoinSelector } from "@/components/shared/CoinSelector";
 import { ArrowLeftRight, Loader2 } from "lucide-react";
+import { calculateExchangeRateDetailed } from "@/lib/utils/crypto-prices";
 
 export default function SwapPage() {
   const { user } = useAuth();
@@ -29,7 +30,6 @@ export default function SwapPage() {
     user?._id ? { userId: user._id } : "skip"
   );
 
-  const calculateExchangeRateAction = useAction((api.actions as any).crypto_prices?.calculateExchangeRate);
   const createSwapMutation = useMutation(api.swaps.createSwap);
 
   const {
@@ -59,10 +59,7 @@ export default function SwapPage() {
     setError(null);
 
     try {
-      const result = await calculateExchangeRateAction({
-        fromCoin,
-        toCoin,
-      });
+      const result = await calculateExchangeRateDetailed(fromCoin, toCoin);
 
       setExchangeRate(result.rate);
       setFromPriceUSD(result.fromPriceUSD);
@@ -76,7 +73,7 @@ export default function SwapPage() {
     } finally {
       setIsLoadingRate(false);
     }
-  }, [fromCoin, toCoin, calculateExchangeRateAction]);
+  }, [fromCoin, toCoin]);
 
   useEffect(() => {
     fetchExchangeRate();
@@ -127,10 +124,7 @@ export default function SwapPage() {
       setIsLoadingRate(true);
       
       // Recalculate exchange rate at submission time to ensure accuracy
-      const latestRate = await calculateExchangeRateAction({
-        fromCoin: data.fromCoin,
-        toCoin: data.toCoin,
-      });
+      const latestRate = await calculateExchangeRateDetailed(data.fromCoin, data.toCoin);
 
       await createSwapMutation({
         userId: user._id,

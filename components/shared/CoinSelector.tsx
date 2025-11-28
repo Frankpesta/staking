@@ -47,30 +47,34 @@ export function CoinSelector({ value, onValueChange, chainId }: CoinSelectorProp
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-[300px] p-0 z-50">
         <Command>
           <CommandInput placeholder="Search coin..." />
           <CommandList>
             <CommandEmpty>No coin found.</CommandEmpty>
             <CommandGroup>
-              {coins.map((coin) => (
-                <CommandItem
-                  key={`${coin.symbol}-${coin.chainId}`}
-                  value={`${coin.symbol} ${coin.name}`}
-                  onSelect={() => {
-                    onValueChange(coin.symbol);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === coin.symbol ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {coin.symbol} - {coin.name}
-                </CommandItem>
-              ))}
+              {coins.map((coin) => {
+                const isSelected = value === coin.symbol;
+                return (
+                  <CommandItem
+                    key={`${coin.symbol}-${coin.chainId}`}
+                    value={coin.symbol}
+                    onSelect={() => {
+                      onValueChange(coin.symbol);
+                      setOpen(false);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        isSelected ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {coin.symbol} - {coin.name}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

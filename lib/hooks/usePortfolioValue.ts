@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { getCryptoPricesUSD } from "@/lib/utils/crypto-prices";
 
 interface BalanceData {
   depositBalance?: Record<string, number> | any;
@@ -34,7 +33,6 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
     error: null,
   });
 
-  const getCryptoPrices = useAction(api.actions.crypto_prices.getCryptoPricesUSD);
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -101,10 +99,10 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
           }
         }
 
-        // Fetch prices only for coins not in cache
+        // Fetch prices only for coins not in cache (frontend fetch)
         if (coinsToFetch.length > 0) {
           try {
-            const fetchedPrices = await getCryptoPrices({ symbols: coinsToFetch });
+            const fetchedPrices = await getCryptoPricesUSD(coinsToFetch);
             
             // Update cache and prices object
             for (const [coin, price] of Object.entries(fetchedPrices)) {
@@ -192,7 +190,7 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [balance, getCryptoPrices]);
+  }, [balance]);
 
   return portfolioValue;
 }

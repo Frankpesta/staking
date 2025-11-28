@@ -37,8 +37,7 @@ export async function getCryptoPriceUSD(symbol: string): Promise<number> {
         headers: {
           Accept: "application/json",
         },
-        // Add cache control to prevent stale data
-        next: { revalidate: 60 }, // Cache for 60 seconds
+        cache: "no-store", // Frontend fetch - don't cache at fetch level
       }
     );
 
@@ -92,7 +91,7 @@ export async function getCryptoPricesUSD(symbols: string[]): Promise<Record<stri
         headers: {
           Accept: "application/json",
         },
-        next: { revalidate: 60 }, // Cache for 60 seconds
+        cache: "no-store", // Frontend fetch - don't cache at fetch level
       }
     );
 
@@ -146,6 +145,50 @@ export async function calculateExchangeRate(
   const rate = fromPrice / toPrice;
 
   return rate;
+}
+
+/**
+ * Calculate exchange rate with detailed price information (for swap page)
+ * Returns the same structure as the Convex action for compatibility
+ */
+export async function calculateExchangeRateDetailed(
+  fromCoin: string,
+  toCoin: string
+): Promise<{
+  rate: number;
+  fromPriceUSD: number;
+  toPriceUSD: number;
+  timestamp: number;
+}> {
+  // If swapping the same coin, rate is 1
+  if (fromCoin.toUpperCase() === toCoin.toUpperCase()) {
+    return {
+      rate: 1,
+      fromPriceUSD: 1,
+      toPriceUSD: 1,
+      timestamp: Date.now(),
+    };
+  }
+
+  // Fetch prices for both coins
+  const prices = await getCryptoPricesUSD([fromCoin, toCoin]);
+
+  const fromPrice = prices[fromCoin.toUpperCase()];
+  const toPrice = prices[toCoin.toUpperCase()];
+
+  if (!fromPrice || !toPrice) {
+    throw new Error(`Could not fetch prices for ${fromCoin} or ${toCoin}`);
+  }
+
+  // Exchange rate = (price of fromCoin in USD) / (price of toCoin in USD)
+  const rate = fromPrice / toPrice;
+
+  return {
+    rate,
+    fromPriceUSD: fromPrice,
+    toPriceUSD: toPrice,
+    timestamp: Date.now(),
+  };
 }
 
 /**
