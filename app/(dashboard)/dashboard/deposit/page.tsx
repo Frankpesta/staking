@@ -39,6 +39,7 @@ export default function DepositPage() {
   const { connect, connectors } = useConnect();
   const [selectedCoin, setSelectedCoin] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [amountConfirmed, setAmountConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [autoDetectedTx, setAutoDetectedTx] = useState<string | null>(null);
   const [depositSubmitted, setDepositSubmitted] = useState(false);
@@ -91,6 +92,7 @@ export default function DepositPage() {
   const handleCoinSelect = (coinSymbol: string) => {
     setSelectedCoin(coinSymbol);
     setAmount("");
+    setAmountConfirmed(false);
     setAutoDetectedTx(null);
     setDepositSubmitted(false);
   };
@@ -185,9 +187,8 @@ export default function DepositPage() {
   }
 
   // Step 2: Amount Input
-  // Check if amount is empty or not a valid positive number
-  const isValidAmount = amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0;
-  if (!isValidAmount) {
+  // Only show amount input if amount hasn't been confirmed yet
+  if (!amountConfirmed) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -229,6 +230,18 @@ export default function DepositPage() {
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
+                onKeyDown={(e) => {
+                  // Allow Enter key to submit
+                  if (e.key === "Enter" && amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0) {
+                    e.preventDefault();
+                    const numAmount = parseFloat(amount);
+                    if (selectedCoinConfig?.minDeposit && numAmount < selectedCoinConfig.minDeposit) {
+                      alert(`Minimum deposit is ${selectedCoinConfig.minDeposit} ${selectedCoinConfig.symbol}`);
+                      return;
+                    }
+                    setAmountConfirmed(true);
+                  }
+                }}
                 className="text-2xl text-center h-16"
                 autoFocus
               />
@@ -250,11 +263,12 @@ export default function DepositPage() {
                   alert(`Minimum deposit is ${selectedCoinConfig.minDeposit} ${selectedCoinConfig.symbol}`);
                   return;
                 }
-                // Amount is already set in state, just proceed to next step
+                // Confirm the amount and proceed to next step
+                setAmountConfirmed(true);
               }}
               className="w-full"
               size="lg"
-              disabled={!amount || parseFloat(amount) <= 0}
+              disabled={!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0}
             >
               Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -271,7 +285,10 @@ export default function DepositPage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => setAmount("")}
+            onClick={() => {
+              setAmount("");
+              setAmountConfirmed(false);
+            }}
             className="text-muted-foreground"
           >
             ← Back
@@ -341,6 +358,7 @@ export default function DepositPage() {
           variant="ghost"
           onClick={() => {
             setAmount("");
+            setAmountConfirmed(false);
             setAutoDetectedTx(null);
             setDepositSubmitted(false);
           }}
