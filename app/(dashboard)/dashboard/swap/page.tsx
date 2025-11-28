@@ -42,6 +42,11 @@ export default function SwapPage() {
     resolver: zodResolver(swapSchema),
   });
 
+  useEffect(() => {
+    register("fromCoin", { required: "From coin is required" });
+    register("toCoin", { required: "To coin is required" });
+  }, [register]);
+
   const amount = watch("amount");
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const fromBalance = fromCoin ? (availableBalance?.[fromCoin] || 0) : 0;
@@ -184,7 +189,7 @@ export default function SwapPage() {
                   value={fromCoin}
                   onValueChange={(value) => {
                     setFromCoin(value);
-                    setValue("fromCoin", value);
+                  setValue("fromCoin", value, { shouldDirty: true, shouldValidate: true });
                   }}
                   balances={availableBalance}
                   filterByBalance={true}
@@ -224,7 +229,7 @@ export default function SwapPage() {
                   value={toCoin}
                   onValueChange={(value) => {
                     setToCoin(value);
-                    setValue("toCoin", value);
+                  setValue("toCoin", value, { shouldDirty: true, shouldValidate: true });
                   }}
                   balances={availableBalance}
                   filterByBalance={false}

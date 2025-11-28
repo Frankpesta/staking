@@ -51,13 +51,21 @@ export function CoinSelector({
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  const baseCoins = useMemo(
-    () =>
-      chainId
-        ? DEFAULT_COINS.filter((coin) => coin.chainId === chainId)
-        : DEFAULT_COINS,
-    [chainId]
-  );
+  const baseCoins = useMemo(() => {
+    const filteredByChain = chainId
+      ? DEFAULT_COINS.filter((coin) => coin.chainId === chainId)
+      : DEFAULT_COINS;
+
+    // Deduplicate by symbol so we don't show the same coin multiple times
+    const seen = new Set<string>();
+    return filteredByChain.filter((coin) => {
+      if (seen.has(coin.symbol)) {
+        return false;
+      }
+      seen.add(coin.symbol);
+      return true;
+    });
+  }, [chainId]);
 
   const coins = useMemo(() => {
     if (!filterByBalance || !balances) {
@@ -70,8 +78,7 @@ export function CoinSelector({
     });
   }, [baseCoins, balances, filterByBalance]);
 
-  const selectedCoin =
-    DEFAULT_COINS.find((coin) => coin.symbol === value) ?? undefined;
+  const selectedCoin = baseCoins.find((coin) => coin.symbol === value);
 
   const formatBalance = (balance: number | undefined) => {
     if (balance === undefined) return "0.000000";
@@ -99,19 +106,18 @@ export function CoinSelector({
             {coins.map((coin) => {
               const isSelected = value === coin.symbol;
               const balance = balances?.[coin.symbol];
-              const commandValue = `${coin.symbol}-${coin.chainId}`;
+
+              const handleSelect = () => {
+                if (!coin.symbol) return;
+                onValueChange(coin.symbol);
+                setOpen(false);
+              };
 
               return (
                 <CommandItem
-                  key={commandValue}
-                  value={commandValue}
-                  onSelect={() => {
-                    // Directly use coin.symbol from closure to avoid parsing issues
-                    if (coin.symbol && typeof coin.symbol === "string") {
-                      onValueChange(coin.symbol);
-                      setOpen(false);
-                    }
-                  }}
+                  key={coin.symbol}
+                  value={coin.symbol}
+                  onSelect={handleSelect}
                   className="cursor-pointer"
                 >
                   <Check

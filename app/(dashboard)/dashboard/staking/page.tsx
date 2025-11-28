@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -44,6 +44,10 @@ export default function StakingPage() {
   } = useForm<StakeInput>({
     resolver: zodResolver(stakeSchema),
   });
+
+  useEffect(() => {
+    register("coin", { required: "Coin is required" });
+  }, [register]);
 
   const amount = watch("amount");
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
@@ -134,7 +138,7 @@ export default function StakingPage() {
                   value={selectedCoin}
                   onValueChange={(value) => {
                     setSelectedCoin(value);
-                    setValue("coin", value);
+                    setValue("coin", value, { shouldDirty: true, shouldValidate: true });
                   }}
                   balances={availableBalance}
                   filterByBalance={true}

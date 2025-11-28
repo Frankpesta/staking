@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -33,14 +33,13 @@ export default function WithdrawPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
-    watch,
   } = useForm<WithdrawalInput>({
     resolver: zodResolver(withdrawalSchema),
   });
 
-  const coin = watch("coin");
-  const amount = watch("amount");
-  const walletAddress = watch("walletAddress");
+  useEffect(() => {
+    register("coin", { required: "Coin is required" });
+  }, [register]);
 
   const selectedCoinConfig = DEFAULT_COINS.find((c) => c.symbol === selectedCoin);
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
@@ -125,7 +124,7 @@ export default function WithdrawPage() {
                   value={selectedCoin}
                   onValueChange={(value) => {
                     setSelectedCoin(value);
-                    setValue("coin", value);
+                    setValue("coin", value, { shouldDirty: true, shouldValidate: true });
                   }}
                   balances={availableBalance}
                   filterByBalance={true}
