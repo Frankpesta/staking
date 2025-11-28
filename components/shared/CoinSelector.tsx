@@ -191,4 +191,3 @@ export function CoinSelector({
     </Popover>
   );
 }
-
