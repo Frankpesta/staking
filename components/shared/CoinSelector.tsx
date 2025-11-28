@@ -105,10 +105,12 @@ export function CoinSelector({
                 <CommandItem
                   key={commandValue}
                   value={commandValue}
-                  onSelect={(currentValue) => {
-                    const selectedSymbol = currentValue.split("-")[0];
-                    onValueChange(selectedSymbol);
-                    setOpen(false);
+                  onSelect={() => {
+                    // Directly use coin.symbol from closure to avoid parsing issues
+                    if (coin.symbol && typeof coin.symbol === "string") {
+                      onValueChange(coin.symbol);
+                      setOpen(false);
+                    }
                   }}
                   className="cursor-pointer"
                 >
