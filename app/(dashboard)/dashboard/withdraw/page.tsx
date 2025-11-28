@@ -127,6 +127,8 @@ export default function WithdrawPage() {
                     setSelectedCoin(value);
                     setValue("coin", value);
                   }}
+                  balances={availableBalance}
+                  filterByBalance={true}
                 />
                 {errors.coin && (
                   <p className="text-sm text-destructive">{errors.coin.message}</p>

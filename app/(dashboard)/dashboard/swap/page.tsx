@@ -186,6 +186,8 @@ export default function SwapPage() {
                     setFromCoin(value);
                     setValue("fromCoin", value);
                   }}
+                  balances={availableBalance}
+                  filterByBalance={true}
                 />
                 {errors.fromCoin && (
                   <p className="text-sm text-destructive">{errors.fromCoin.message}</p>
@@ -224,6 +226,8 @@ export default function SwapPage() {
                     setToCoin(value);
                     setValue("toCoin", value);
                   }}
+                  balances={availableBalance}
+                  filterByBalance={false}
                 />
                 {errors.toCoin && (
                   <p className="text-sm text-destructive">{errors.toCoin.message}</p>

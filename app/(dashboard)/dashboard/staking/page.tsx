@@ -136,6 +136,8 @@ export default function StakingPage() {
                     setSelectedCoin(value);
                     setValue("coin", value);
                   }}
+                  balances={availableBalance}
+                  filterByBalance={true}
                 />
                 {errors.coin && (
                   <p className="text-sm text-destructive">{errors.coin.message}</p>
