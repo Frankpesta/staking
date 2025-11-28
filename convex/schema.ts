@@ -24,12 +24,10 @@ export default defineSchema({
 
   balances: defineTable({
     userId: v.id("users"),
-    depositBalance: v.object({
-      // Dynamic object with coin symbols as keys and numbers as values
-      // Example: { BTC: 0, ETH: 0, USDT: 0 }
-    }),
-    stakedBalance: v.object({}),
-    availableBalance: v.object({}),
+    depositBalance: v.any(), // Dynamic object with coin symbols as keys and numbers as values
+    // Example: { BTC: 0, ETH: 0, USDT: 0 }
+    stakedBalance: v.any(), // Dynamic object with coin symbols as keys and numbers as values
+    availableBalance: v.any(), // Dynamic object with coin symbols as keys and numbers as values
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"]),
