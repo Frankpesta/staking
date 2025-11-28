@@ -363,6 +363,129 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Visual Showcase with App Image */}
+            <ScrollReveal>
+              <div className="mb-16 grid lg:grid-cols-2 gap-8 items-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl animate-pulse-slow" />
+                  <div className="relative z-10 rounded-2xl overflow-hidden border border-border/50 bg-card/50 backdrop-blur-sm p-4">
+                    <img 
+                      src="/app.png" 
+                      alt="Mobile App Interface" 
+                      className="w-full h-auto rounded-xl object-cover animate-float"
+                      style={{ animationDuration: '7s' }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/15 to-primary/10 border border-primary/20">
+                    <Zap className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="mb-4 text-3xl font-bold">
+                    <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                      Mobile-First Experience
+                    </span>
+                  </h3>
+                  <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
+                    Manage your staking portfolio on the go with our intuitive mobile application. Monitor your earnings, track performance, and execute transactions seamlessly from anywhere in the world.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Mobile App
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Real-Time
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      User-Friendly
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Visual Showcase with Candles Image */}
+            <ScrollReveal>
+              <div className="mb-16 grid lg:grid-cols-2 gap-8 items-center">
+                <div className="relative order-2 lg:order-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl animate-pulse-slow" />
+                  <div className="relative z-10 rounded-2xl overflow-hidden border border-border/50 bg-card/50 backdrop-blur-sm p-4">
+                    <img 
+                      src="/candles.png" 
+                      alt="Trading Analytics" 
+                      className="w-full h-auto rounded-xl object-cover animate-float"
+                      style={{ animationDuration: '9s' }}
+                    />
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/15 to-primary/10 border border-primary/20">
+                    <BarChart3 className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="mb-4 text-3xl font-bold">
+                    <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                      Advanced Analytics & Insights
+                    </span>
+                  </h3>
+                  <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
+                    Get comprehensive market insights and detailed analytics to make informed staking decisions. Track performance metrics, analyze trends, and optimize your portfolio with real-time data visualization.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Analytics
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Insights
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Data-Driven
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Visual Showcase with Experienced Trade Image */}
+            <ScrollReveal>
+              <div className="mb-16 grid lg:grid-cols-2 gap-8 items-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl animate-pulse-slow" />
+                  <div className="relative z-10 rounded-2xl overflow-hidden border border-border/50 bg-card/50 backdrop-blur-sm p-4">
+                    <img 
+                      src="/experienced-trade.png" 
+                      alt="Experienced Trading Platform" 
+                      className="w-full h-auto rounded-xl object-cover animate-float"
+                      style={{ animationDuration: '8s' }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/15 to-primary/10 border border-primary/20">
+                    <TrendingUp className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="mb-4 text-3xl font-bold">
+                    <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                      Professional Trading Tools
+                    </span>
+                  </h3>
+                  <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
+                    Designed for experienced traders and investors, our platform offers advanced trading tools, comprehensive market analysis, and professional-grade features to maximize your staking returns.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Professional
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Advanced
+                    </div>
+                    <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium">
+                      Expert Tools
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
             <StaggerChildren className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <div className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 feature-card">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
