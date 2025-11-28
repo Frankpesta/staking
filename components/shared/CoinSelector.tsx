@@ -14,6 +14,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { DEFAULT_COINS } from "@/lib/constants";
@@ -49,27 +50,29 @@ export function CoinSelector({ value, onValueChange, chainId }: CoinSelectorProp
       <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder="Search coin..." />
-          <CommandEmpty>No coin found.</CommandEmpty>
-          <CommandGroup>
-            {coins.map((coin) => (
-              <CommandItem
-                key={`${coin.symbol}-${coin.chainId}`}
-                value={coin.symbol}
-                onSelect={() => {
-                  onValueChange(coin.symbol);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === coin.symbol ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {coin.symbol} - {coin.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty>No coin found.</CommandEmpty>
+            <CommandGroup>
+              {coins.map((coin) => (
+                <CommandItem
+                  key={`${coin.symbol}-${coin.chainId}`}
+                  value={`${coin.symbol} ${coin.name}`}
+                  onSelect={() => {
+                    onValueChange(coin.symbol);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === coin.symbol ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {coin.symbol} - {coin.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

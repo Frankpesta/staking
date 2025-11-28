@@ -121,6 +121,9 @@ export default function DashboardPage() {
                 {portfolioValue.lastUpdated && (
                   <span className="block mt-1">Updated {new Date(portfolioValue.lastUpdated).toLocaleTimeString()}</span>
                 )}
+                {portfolioValue.error && (
+                  <span className="block mt-1 text-yellow-600 dark:text-yellow-400">{portfolioValue.error}</span>
+                )}
               </p>
             </CardContent>
           </Card>
