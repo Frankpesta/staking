@@ -12,13 +12,11 @@ export function AnimatedBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    // Store canvas dimensions to avoid null checks
+    const getCanvasDimensions = () => ({
+      width: canvas.width,
+      height: canvas.height,
+    });
 
     // Particle system
     class Particle {
@@ -29,10 +27,14 @@ export function AnimatedBackground() {
       speedY: number;
       opacity: number;
       color: string;
+      canvasWidth: number;
+      canvasHeight: number;
 
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+      constructor(canvasWidth: number, canvasHeight: number) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
         this.size = Math.random() * 2 + 0.5;
         this.speedX = (Math.random() - 0.5) * 0.5;
         this.speedY = (Math.random() - 0.5) * 0.5;
@@ -44,8 +46,8 @@ export function AnimatedBackground() {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x < 0 || this.x > this.canvasWidth) this.speedX *= -1;
+        if (this.y < 0 || this.y > this.canvasHeight) this.speedY *= -1;
       }
 
       draw() {
@@ -57,10 +59,28 @@ export function AnimatedBackground() {
       }
     }
 
+    // Initialize canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const dimensions = getCanvasDimensions();
     const particles: Particle[] = [];
     for (let i = 0; i < 50; i++) {
-      particles.push(new Particle());
+      particles.push(new Particle(dimensions.width, dimensions.height));
     }
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      // Update particle canvas dimensions on resize
+      const newDimensions = getCanvasDimensions();
+      particles.forEach((particle) => {
+        particle.canvasWidth = newDimensions.width;
+        particle.canvasHeight = newDimensions.height;
+      });
+    };
+
+    window.addEventListener("resize", resizeCanvas);
 
     let animationFrameId: number;
 
