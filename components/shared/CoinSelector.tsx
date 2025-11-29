@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_COINS } from "@/lib/constants";
 
 interface CoinSelectorProps {
-  value?: string;
+  value?: string | null;
   onValueChange: (value: string) => void;
   chainId?: number;
   balances?: Record<string, number>;
@@ -37,6 +37,7 @@ export function CoinSelector({
   balances,
   filterByBalance = false,
 }: CoinSelectorProps) {
+  const normalizedValue = value ?? "";
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -78,7 +79,7 @@ export function CoinSelector({
     });
   }, [baseCoins, balances, filterByBalance]);
 
-  const selectedCoin = baseCoins.find((coin) => coin.symbol === value);
+  const selectedCoin = baseCoins.find((coin) => coin.symbol === normalizedValue);
 
   const formatBalance = (balance: number | undefined) => {
     if (balance === undefined) return "0.000000";
@@ -104,7 +105,7 @@ export function CoinSelector({
         ) : (
           <CommandGroup>
             {coins.map((coin) => {
-              const isSelected = value === coin.symbol;
+              const isSelected = normalizedValue === coin.symbol;
               const balance = balances?.[coin.symbol];
 
               return (
@@ -112,8 +113,7 @@ export function CoinSelector({
                   key={coin.symbol}
                   value={coin.symbol}
                   onSelect={(currentValue) => {
-                    if (!currentValue) return;
-                    onValueChange(currentValue);
+                    onValueChange(currentValue || coin.symbol);
                     setOpen(false);
                   }}
                   className="cursor-pointer"
