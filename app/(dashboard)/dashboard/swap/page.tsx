@@ -179,7 +179,7 @@ export default function SwapPage() {
 
               {success && (
                 <div className="rounded-md bg-green-50 p-3 text-sm text-green-900 dark:bg-green-950 dark:text-green-100">
-                  Swap request submitted! Admin will process it shortly.
+                  Swap completed successfully! Your balances have been updated.
                 </div>
               )}
 
@@ -366,8 +366,8 @@ export default function SwapPage() {
                 <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-900 dark:bg-blue-950 dark:text-blue-100">
                   <p className="font-medium">Note:</p>
                   <p className="mt-1">
-                    Exchange rates are fetched in real-time from CoinGecko. Swap requests require admin approval. 
-                    The final rate will be recalculated at the time of processing to ensure accuracy.
+                    Exchange rates are fetched in real-time from CoinGecko. Swaps are processed instantly and automatically. 
+                    Your balances will be updated immediately upon confirmation.
                   </p>
                 </div>
               </>
