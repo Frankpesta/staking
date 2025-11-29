@@ -25,6 +25,7 @@ export const createStakingPool = mutation({
     }
 
     const availableBalance = balance.availableBalance as Record<string, number>;
+    const stakedBalance = balance.stakedBalance as Record<string, number>;
     const currentBalance = availableBalance[args.coin] || 0;
 
     if (currentBalance < args.amount) {
@@ -33,6 +34,22 @@ export const createStakingPool = mutation({
 
     const now = Date.now();
     const endDate = now + args.duration * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+
+    // Deduct balance immediately (move from available to staked)
+
+    if (!availableBalance[args.coin]) availableBalance[args.coin] = 0;
+    availableBalance[args.coin] -= args.amount;
+    if (availableBalance[args.coin] < 0) availableBalance[args.coin] = 0;
+
+    if (!stakedBalance[args.coin]) stakedBalance[args.coin] = 0;
+    stakedBalance[args.coin] += args.amount;
+
+    // Save updated balance immediately
+    await ctx.db.patch(balance._id, {
+      availableBalance,
+      stakedBalance,
+      updatedAt: now,
+    });
 
     // Create staking pool
     const poolId = await ctx.db.insert("stakingPools", {
@@ -45,14 +62,6 @@ export const createStakingPool = mutation({
       endDate,
       status: "active",
       createdAt: now,
-    });
-
-    // Update balance (move from available to staked)
-    await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
-      userId: args.userId,
-      coin: args.coin,
-      amount: args.amount,
-      type: "stake",
     });
 
     // Create transaction record

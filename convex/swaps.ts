@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 /**
- * Create a swap transaction
+ * Create a swap transaction (automatic - no admin approval needed)
  */
 export const createSwap = mutation({
   args: {
@@ -15,13 +15,22 @@ export const createSwap = mutation({
   },
   handler: async (ctx, args) => {
     // Get user balance
-    const balance = await ctx.db
+    let balance = await ctx.db
       .query("balances")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .first();
 
     if (!balance) {
-      throw new Error("Balance not found");
+      // Create initial balance if it doesn't exist
+      const balanceId = await ctx.db.insert("balances", {
+        userId: args.userId,
+        depositBalance: {},
+        stakedBalance: {},
+        availableBalance: {},
+        updatedAt: Date.now(),
+      });
+      balance = await ctx.db.get(balanceId);
+      if (!balance) throw new Error("Failed to create balance");
     }
 
     const availableBalance = balance.availableBalance as Record<string, number>;
@@ -34,14 +43,43 @@ export const createSwap = mutation({
     // Calculate amount to receive
     const toAmount = args.amount * args.exchangeRate;
 
-    // Create transaction
+    // Update balances immediately (synchronously)
+    // Deduct from coin
+    if (!availableBalance[args.fromCoin]) availableBalance[args.fromCoin] = 0;
+    availableBalance[args.fromCoin] -= args.amount;
+    if (availableBalance[args.fromCoin] < 0) availableBalance[args.fromCoin] = 0;
+
+    // Add to coin
+    if (!availableBalance[args.toCoin]) availableBalance[args.toCoin] = 0;
+    availableBalance[args.toCoin] += toAmount;
+
+    // Update deposit balance for both coins
+    const depositBalance = balance.depositBalance as Record<string, number>;
+    if (!depositBalance[args.fromCoin]) depositBalance[args.fromCoin] = 0;
+    depositBalance[args.fromCoin] -= args.amount;
+    if (depositBalance[args.fromCoin] < 0) depositBalance[args.fromCoin] = 0;
+
+    if (!depositBalance[args.toCoin]) depositBalance[args.toCoin] = 0;
+    depositBalance[args.toCoin] += toAmount;
+
+    // Save updated balance
+    await ctx.db.patch(balance._id, {
+      depositBalance,
+      availableBalance,
+      updatedAt: Date.now(),
+    });
+
+    const now = Date.now();
+
+    // Create transaction record (completed immediately)
     const transactionId = await ctx.db.insert("transactions", {
       userId: args.userId,
       type: "swap",
       coin: `${args.fromCoin}/${args.toCoin}`,
       amount: args.amount,
-      status: "pending",
-      requestedAt: Date.now(),
+      status: "completed",
+      requestedAt: now,
+      processedAt: now,
       metadata: {
         fromCoin: args.fromCoin,
         toCoin: args.toCoin,
@@ -54,8 +92,8 @@ export const createSwap = mutation({
     // Create activity log
     await ctx.db.insert("activities", {
       userId: args.userId,
-      type: "swap",
-      description: `Swap request: ${args.amount} ${args.fromCoin} → ${toAmount} ${args.toCoin}`,
+      type: "swap_completed",
+      description: `Swap completed: ${args.amount} ${args.fromCoin} → ${toAmount.toFixed(6)} ${args.toCoin}`,
       metadata: {
         transactionId,
         fromCoin: args.fromCoin,
@@ -63,77 +101,18 @@ export const createSwap = mutation({
         fromAmount: args.amount,
         toAmount,
       },
-      timestamp: Date.now(),
+      timestamp: now,
     });
 
-    return { transactionId };
+    return { transactionId, success: true };
   },
 });
 
 /**
- * Approve and process swap (admin only)
+ * Note: Swaps are now automatic and don't require admin approval.
+ * The createSwap mutation handles balance updates immediately.
+ * This function is kept for backward compatibility but is no longer needed.
  */
-export const approveSwap = mutation({
-  args: {
-    transactionId: v.id("transactions"),
-    adminId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    const transaction = await ctx.db.get(args.transactionId);
-    if (!transaction) {
-      throw new Error("Transaction not found");
-    }
-
-    if (transaction.type !== "swap" || transaction.status !== "pending") {
-      throw new Error("Invalid transaction");
-    }
-
-    const metadata = transaction.metadata as {
-      fromCoin: string;
-      toCoin: string;
-      fromAmount: number;
-      toAmount: number;
-    };
-
-    // Update transaction status
-    await ctx.db.patch(args.transactionId, {
-      status: "approved",
-      processedAt: Date.now(),
-      processedBy: args.adminId,
-    });
-
-    // Update balances
-    await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
-      userId: transaction.userId,
-      coin: metadata.fromCoin,
-      amount: metadata.fromAmount,
-      type: "swap_from",
-    });
-
-    await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
-      userId: transaction.userId,
-      coin: metadata.toCoin,
-      amount: metadata.toAmount,
-      type: "swap_to",
-    });
-
-    // Mark as completed
-    await ctx.db.patch(args.transactionId, {
-      status: "completed",
-    });
-
-    // Create activity log
-    await ctx.db.insert("activities", {
-      userId: transaction.userId,
-      type: "swap_completed",
-      description: `Swap completed: ${metadata.fromAmount} ${metadata.fromCoin} → ${metadata.toAmount} ${metadata.toCoin}`,
-      metadata: { transactionId: args.transactionId },
-      timestamp: Date.now(),
-    });
-
-    return { success: true };
-  },
-});
 
 /**
  * Get swap exchange rate using real-time prices from CoinGecko

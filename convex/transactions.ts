@@ -54,6 +54,7 @@ export const createDeposit = mutation({
 
 /**
  * Create a withdrawal transaction
+ * Balance is deducted immediately, but blockchain transaction requires admin approval
  */
 export const createWithdrawal = mutation({
   args: {
@@ -65,7 +66,7 @@ export const createWithdrawal = mutation({
   },
   handler: async (ctx, args) => {
     // Get user balance
-    const balance = await ctx.db
+    let balance = await ctx.db
       .query("balances")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .first();
@@ -91,7 +92,26 @@ export const createWithdrawal = mutation({
       throw new Error(`Platform wallet not configured for ${args.coin}`);
     }
 
-    // Create transaction
+    // Deduct balance immediately
+    if (!availableBalance[args.coin]) availableBalance[args.coin] = 0;
+    availableBalance[args.coin] -= args.amount;
+    if (availableBalance[args.coin] < 0) availableBalance[args.coin] = 0;
+
+    const depositBalance = balance.depositBalance as Record<string, number>;
+    if (!depositBalance[args.coin]) depositBalance[args.coin] = 0;
+    depositBalance[args.coin] -= args.amount;
+    if (depositBalance[args.coin] < 0) depositBalance[args.coin] = 0;
+
+    // Save updated balance
+    await ctx.db.patch(balance._id, {
+      depositBalance,
+      availableBalance,
+      updatedAt: Date.now(),
+    });
+
+    const now = Date.now();
+
+    // Create transaction (pending - requires admin approval for blockchain transaction)
     const transactionId = await ctx.db.insert("transactions", {
       userId: args.userId,
       type: "withdrawal",
@@ -102,16 +122,16 @@ export const createWithdrawal = mutation({
       chainId: args.chainId || platformWallet.chainId,
       fromAddress: platformWallet.address,
       toAddress: args.walletAddress,
-      requestedAt: Date.now(),
+      requestedAt: now,
     });
 
     // Create activity log
     await ctx.db.insert("activities", {
       userId: args.userId,
       type: "withdrawal",
-      description: `Withdrawal request: ${args.amount} ${args.coin}`,
+      description: `Withdrawal request: ${args.amount} ${args.coin} (balance deducted, pending admin approval)`,
       metadata: { transactionId, amount: args.amount, coin: args.coin },
-      timestamp: Date.now(),
+      timestamp: now,
     });
 
     return { transactionId };
@@ -145,7 +165,7 @@ export const approveTransaction = mutation({
       adminNote: args.adminNote,
     });
 
-    // If it's a deposit, update balance
+    // If it's a deposit, update balance (withdrawals already deducted balance immediately)
     if (transaction.type === "deposit") {
       await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
         userId: transaction.userId,
@@ -154,6 +174,7 @@ export const approveTransaction = mutation({
         type: "deposit",
       });
     }
+    // Note: Withdrawals already deducted balance when created, so no need to deduct again
 
     // Create activity log
     await ctx.db.insert("activities", {
@@ -194,11 +215,21 @@ export const rejectTransactionPublic = mutation({
       adminNote: args.adminNote,
     });
 
+    // If withdrawal was rejected, refund the balance (since we deducted it immediately)
+    if (transaction.type === "withdrawal") {
+      await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
+        userId: transaction.userId,
+        coin: transaction.coin,
+        amount: transaction.amount,
+        type: "deposit", // Refund by adding back
+      });
+    }
+
     // Create activity log
     await ctx.db.insert("activities", {
       userId: transaction.userId,
       type: `${transaction.type}_rejected`,
-      description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}`,
+      description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}${transaction.type === "withdrawal" ? " (balance refunded)" : ""}`,
       metadata: { transactionId: args.transactionId, reason: args.adminNote },
       timestamp: Date.now(),
     });
@@ -234,15 +265,8 @@ export const completeTransactionPublic = mutation({
       processedBy: args.adminId,
     });
 
-    // Update balance based on transaction type
-    if (transaction.type === "withdrawal") {
-      await ctx.scheduler.runAfter(0, internal.balances.updateBalance, {
-        userId: transaction.userId,
-        coin: transaction.coin,
-        amount: transaction.amount,
-        type: "withdrawal",
-      });
-    }
+    // Note: Withdrawals already deducted balance when created, so no need to deduct again
+    // Deposits will be handled by approveTransaction
 
     // Create activity log
     await ctx.db.insert("activities", {
