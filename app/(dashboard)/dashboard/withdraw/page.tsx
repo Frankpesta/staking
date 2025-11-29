@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useQuery } from "convex/react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { withdrawalSchema, type WithdrawalInput } from "@/lib/validations/transactions";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import { isAddress } from "viem";
 
 export default function WithdrawPage() {
   const { user } = useAuth();
-  const [selectedCoin, setSelectedCoin] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -30,17 +29,21 @@ export default function WithdrawPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    watch,
   } = useForm<WithdrawalInput>({
     resolver: zodResolver(withdrawalSchema),
+    defaultValues: {
+      coin: "",
+      amount: 0,
+      walletAddress: "",
+    },
   });
 
-  useEffect(() => {
-    register("coin", { required: "Coin is required" });
-  }, [register]);
-
+  const selectedCoin = watch("coin");
   const selectedCoinConfig = DEFAULT_COINS.find((c) => c.symbol === selectedCoin);
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const currentBalance = selectedCoin ? (availableBalance?.[selectedCoin] || 0) : 0;
@@ -120,14 +123,19 @@ export default function WithdrawPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Coin</label>
-                <CoinSelector
-                  value={selectedCoin}
-                  onValueChange={(value) => {
-                    setSelectedCoin(value);
-                    setValue("coin", value, { shouldDirty: true, shouldValidate: true });
-                  }}
-                  balances={availableBalance}
-                  filterByBalance={true}
+                <Controller
+                  name="coin"
+                  control={control}
+                  render={({ field }) => (
+                    <CoinSelector
+                      value={field.value ?? ""}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      balances={availableBalance}
+                      filterByBalance={true}
+                    />
+                  )}
                 />
                 {errors.coin && (
                   <p className="text-sm text-destructive">{errors.coin.message}</p>

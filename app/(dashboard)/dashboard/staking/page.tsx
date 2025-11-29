@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { stakeSchema, type StakeInput } from "@/lib/validations/transactions";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,6 @@ import { useQuery as useAppSettings } from "convex/react";
 
 export default function StakingPage() {
   const { user } = useAuth();
-  const [selectedCoin, setSelectedCoin] = useState<string>("");
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -37,19 +35,23 @@ export default function StakingPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
     watch,
   } = useForm<StakeInput>({
     resolver: zodResolver(stakeSchema),
+    defaultValues: {
+      coin: "",
+      amount: 0,
+      duration: DEFAULT_STAKING_OPTIONS[0]?.duration ?? 30,
+    },
   });
 
-  useEffect(() => {
-    register("coin", { required: "Coin is required" });
-  }, [register]);
-
+  const selectedCoin = watch("coin");
   const amount = watch("amount");
+  const selectedDuration = watch("duration");
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const currentBalance = selectedCoin ? (availableBalance?.[selectedCoin] || 0) : 0;
 
@@ -92,8 +94,11 @@ export default function StakingPage() {
       setTimeout(() => {
         setSuccess(false);
         setValue("amount", 0);
-        setSelectedCoin("");
-        setSelectedDuration(null);
+        setValue("coin", "", { shouldDirty: false, shouldValidate: true });
+        setValue("duration", DEFAULT_STAKING_OPTIONS[0]?.duration ?? 30, {
+          shouldDirty: false,
+          shouldValidate: true,
+        });
       }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create staking pool");
@@ -134,14 +139,19 @@ export default function StakingPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Coin</label>
-                <CoinSelector
-                  value={selectedCoin}
-                  onValueChange={(value) => {
-                    setSelectedCoin(value);
-                    setValue("coin", value, { shouldDirty: true, shouldValidate: true });
-                  }}
-                  balances={availableBalance}
-                  filterByBalance={true}
+                <Controller
+                  name="coin"
+                  control={control}
+                  render={({ field }) => (
+                    <CoinSelector
+                      value={field.value ?? ""}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      balances={availableBalance}
+                      filterByBalance={true}
+                    />
+                  )}
                 />
                 {errors.coin && (
                   <p className="text-sm text-destructive">{errors.coin.message}</p>
@@ -188,8 +198,10 @@ export default function StakingPage() {
                       type="button"
                       variant={selectedDuration === option.duration ? "default" : "outline"}
                       onClick={() => {
-                        setSelectedDuration(option.duration);
-                        setValue("duration", option.duration);
+                        setValue("duration", option.duration, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
                       }}
                       className="flex flex-col items-center gap-1 h-auto py-2 sm:py-3 text-xs sm:text-sm"
                     >

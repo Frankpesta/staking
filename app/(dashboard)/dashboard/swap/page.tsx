@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { swapSchema, type SwapInput } from "@/lib/validations/transactions";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,6 @@ import { calculateExchangeRateDetailed } from "@/lib/utils/crypto-prices";
 
 export default function SwapPage() {
   const { user } = useAuth();
-  const [fromCoin, setFromCoin] = useState<string>("");
-  const [toCoin, setToCoin] = useState<string>("");
   const [exchangeRate, setExchangeRate] = useState<number>(1);
   const [fromPriceUSD, setFromPriceUSD] = useState<number | null>(null);
   const [toPriceUSD, setToPriceUSD] = useState<number | null>(null);
@@ -34,19 +32,22 @@ export default function SwapPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
     watch,
   } = useForm<SwapInput>({
     resolver: zodResolver(swapSchema),
+    defaultValues: {
+      fromCoin: "",
+      toCoin: "",
+      amount: 0,
+    },
   });
 
-  useEffect(() => {
-    register("fromCoin", { required: "From coin is required" });
-    register("toCoin", { required: "To coin is required" });
-  }, [register]);
-
+  const fromCoin = watch("fromCoin");
+  const toCoin = watch("toCoin");
   const amount = watch("amount");
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const fromBalance = fromCoin ? (availableBalance?.[fromCoin] || 0) : 0;
@@ -102,13 +103,12 @@ export default function SwapPage() {
   const toUSDValue = calculateUSDValue(calculateToAmount(), toCoin, toPriceUSD);
 
   const swapCoins = () => {
-    const temp = fromCoin;
-    setFromCoin(toCoin);
-    setToCoin(temp);
-    setValue("fromCoin", toCoin);
-    setValue("toCoin", temp);
+    const currentFrom = fromCoin;
+    const currentTo = toCoin;
+    setValue("fromCoin", currentTo ?? "", { shouldDirty: true, shouldValidate: true });
+    setValue("toCoin", currentFrom ?? "", { shouldDirty: true, shouldValidate: true });
     // Reset amount when swapping coins
-    setValue("amount", 0);
+    setValue("amount", 0, { shouldDirty: true, shouldValidate: true });
   };
 
   const onSubmit = async (data: SwapInput) => {
@@ -185,14 +185,19 @@ export default function SwapPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">From Coin</label>
-                <CoinSelector
-                  value={fromCoin}
-                  onValueChange={(value) => {
-                    setFromCoin(value);
-                  setValue("fromCoin", value, { shouldDirty: true, shouldValidate: true });
-                  }}
-                  balances={availableBalance}
-                  filterByBalance={true}
+                <Controller
+                  name="fromCoin"
+                  control={control}
+                  render={({ field }) => (
+                    <CoinSelector
+                      value={field.value ?? ""}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      balances={availableBalance}
+                      filterByBalance={true}
+                    />
+                  )}
                 />
                 {errors.fromCoin && (
                   <p className="text-sm text-destructive">{errors.fromCoin.message}</p>
@@ -225,14 +230,19 @@ export default function SwapPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">To Coin</label>
-                <CoinSelector
-                  value={toCoin}
-                  onValueChange={(value) => {
-                    setToCoin(value);
-                  setValue("toCoin", value, { shouldDirty: true, shouldValidate: true });
-                  }}
-                  balances={availableBalance}
-                  filterByBalance={false}
+                <Controller
+                  name="toCoin"
+                  control={control}
+                  render={({ field }) => (
+                    <CoinSelector
+                      value={field.value ?? ""}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      balances={availableBalance}
+                      filterByBalance={false}
+                    />
+                  )}
                 />
                 {errors.toCoin && (
                   <p className="text-sm text-destructive">{errors.toCoin.message}</p>
