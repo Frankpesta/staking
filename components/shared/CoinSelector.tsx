@@ -107,17 +107,15 @@ export function CoinSelector({
               const isSelected = value === coin.symbol;
               const balance = balances?.[coin.symbol];
 
-              const handleSelect = () => {
-                if (!coin.symbol) return;
-                onValueChange(coin.symbol);
-                setOpen(false);
-              };
-
               return (
                 <CommandItem
                   key={coin.symbol}
                   value={coin.symbol}
-                  onSelect={handleSelect}
+                  onSelect={(currentValue) => {
+                    if (!currentValue) return;
+                    onValueChange(currentValue);
+                    setOpen(false);
+                  }}
                   className="cursor-pointer"
                 >
                   <Check
