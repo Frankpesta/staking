@@ -10,7 +10,7 @@ interface TradingViewTickerProps {
 export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,18 +20,22 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
   useEffect(() => {
     if (!mounted || !containerRef.current) return;
 
+    // Capture ref values for cleanup
+    const container = containerRef.current;
+    const currentScript = scriptRef.current;
+
     // Remove existing script if present
-    if (scriptRef.current) {
-      scriptRef.current.remove();
+    if (currentScript) {
+      currentScript.remove();
     }
 
     // Clear container
-    containerRef.current.innerHTML = "";
+    container.innerHTML = "";
 
     // Create container div for TradingView widget
     const widgetContainer = document.createElement("div");
     widgetContainer.className = "tradingview-widget-container__widget";
-    containerRef.current.appendChild(widgetContainer);
+    container.appendChild(widgetContainer);
 
     // Determine theme - check DOM class first (most reliable)
     // next-themes adds "dark" class to html element
@@ -122,7 +126,7 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
         },
       ],
       showSymbolLogo: true,
-      colorTheme: isDarkMode ? "dark" : "light",
+      colorTheme: "dark",
       isTransparent: false,
       displayMode: "adaptive",
       locale: "en",
@@ -138,11 +142,12 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
     scriptRef.current = script;
 
     return () => {
+      // Use captured values from effect scope
       if (scriptRef.current) {
         scriptRef.current.remove();
       }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
+      if (container) {
+        container.innerHTML = "";
       }
     };
   }, [mounted, resolvedTheme]);
