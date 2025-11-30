@@ -33,6 +33,28 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
     widgetContainer.className = "tradingview-widget-container__widget";
     containerRef.current.appendChild(widgetContainer);
 
+    // Determine theme - check DOM class first (most reliable)
+    // next-themes adds "dark" class to html element
+    const htmlElement = document.documentElement;
+    const hasDarkClass = htmlElement.classList.contains("dark");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    // Use resolvedTheme if available, otherwise check DOM
+    let isDarkMode = false;
+    if (resolvedTheme === "dark") {
+      isDarkMode = true;
+    } else if (resolvedTheme === "light") {
+      isDarkMode = false;
+    } else {
+      // System theme or not resolved yet - check DOM class
+      isDarkMode = hasDarkClass || (resolvedTheme === "system" && prefersDark);
+    }
+    
+    // Force dark mode if DOM has dark class (most reliable)
+    if (hasDarkClass) {
+      isDarkMode = true;
+    }
+
     // Create configuration script
     const configScript = document.createElement("script");
     configScript.type = "text/javascript";
@@ -100,8 +122,8 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
         },
       ],
       showSymbolLogo: true,
-      colorTheme: resolvedTheme === "dark" ? "dark" : "light",
-      isTransparent: true,
+      colorTheme: isDarkMode ? "dark" : "light",
+      isTransparent: false,
       displayMode: "adaptive",
       locale: "en",
     });
@@ -137,7 +159,7 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
     <div className={`relative w-full ${className}`}>
       <div
         ref={containerRef}
-        className="tradingview-widget-container h-[60px] w-full rounded-lg overflow-hidden border border-border/50 bg-background/95 dark:bg-background/95 backdrop-blur-sm shadow-sm"
+        className="tradingview-widget-container h-[60px] w-full rounded-lg overflow-hidden"
         style={{ minHeight: "60px" }}
       />
       <style jsx global>{`
