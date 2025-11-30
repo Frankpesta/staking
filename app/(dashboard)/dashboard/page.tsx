@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Wallet, TrendingUp, ArrowUp } from "lucide-react";
 import { staggerFadeIn } from "@/lib/utils/animations";
 import { StaggerChildren } from "@/components/animations/StaggerChildren";
+import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -66,6 +67,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* TradingView Ticker Tape */}
+      <div className="w-full">
+        <TradingViewTicker />
+      </div>
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">
@@ -109,7 +115,7 @@ export default function DashboardPage() {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold break-words">
+              <div className="text-xl sm:text-2xl font-bold wrap-break-word">
                 {portfolioValue.isLoading ? (
                   <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
                 ) : (
@@ -134,7 +140,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold break-words">
+              <div className="text-xl sm:text-2xl font-bold wrap-break-word">
                 {portfolioValue.isLoading ? (
                   <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
                 ) : (
@@ -153,7 +159,7 @@ export default function DashboardPage() {
               <ArrowUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold break-words">
+              <div className="text-xl sm:text-2xl font-bold wrap-break-word">
                 {portfolioValue.isLoading ? (
                   <span className="inline-block h-6 w-24 animate-pulse rounded bg-muted" />
                 ) : (
@@ -183,7 +189,7 @@ export default function DashboardPage() {
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-3 last:border-0"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm sm:text-base break-words">{activity.description}</p>
+                    <p className="font-medium text-sm sm:text-base wrap-break-word">{activity.description}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {new Date(activity.timestamp).toLocaleString()}
                     </p>

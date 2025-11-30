@@ -16,6 +16,25 @@ export default defineSchema({
     kycDocuments: v.array(v.id("kycDocuments")),
     twoFactorEnabled: v.boolean(),
     twoFactorSecret: v.optional(v.string()),
+    // Profile fields
+    accountHolderName1: v.optional(v.string()),
+    accountHolderName2: v.optional(v.string()),
+    dateOfBirth: v.optional(v.number()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    phoneCountryCode: v.optional(v.string()),
+    accountType: v.optional(v.union(
+      v.literal("Individual Staking"),
+      v.literal("Digital Wealth Partner"),
+      v.literal("Joint Ownership Account")
+    )),
+    hasLLCTrustCorp: v.optional(v.boolean()),
+    hasCryptoIRA: v.optional(v.boolean()),
+    profileImageId: v.optional(v.id("_storage")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

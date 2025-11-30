@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CoinSelector } from "@/components/shared/CoinSelector";
 import { ArrowLeftRight, Loader2 } from "lucide-react";
 import { calculateExchangeRateDetailed } from "@/lib/utils/crypto-prices";
+import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 
 export default function SwapPage() {
   const { user } = useAuth();
@@ -153,6 +154,11 @@ export default function SwapPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* TradingView Ticker Tape */}
+      <div className="w-full">
+        <TradingViewTicker />
+      </div>
+
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Swap Coins</h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">

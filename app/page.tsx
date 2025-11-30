@@ -35,6 +35,7 @@ import { StaggerChildren } from "@/components/animations/StaggerChildren";
 import { BlockchainGrid } from "@/components/shared/BlockchainGrid";
 import { CryptoIcon } from "@/components/shared/CryptoIcon";
 import { AnimatedBackground } from "@/components/animations/AnimatedBackground";
+import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 
 function MobileNav() {
   return (
@@ -132,8 +133,15 @@ export default function Home() {
         </div>
       </header>
 
+      {/* TradingView Ticker Tape */}
+      <div className="fixed top-16 md:top-20 left-0 right-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 md:px-6 py-2">
+          <TradingViewTicker />
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <main className="flex-1 pt-16 md:pt-20">
+      <main className="flex-1 pt-24 md:pt-28">
         <section className="relative overflow-hidden border-b py-20 sm:py-32 md:py-40 min-h-[90vh] flex items-center">
           {/* Enhanced Animated Background */}
           <AnimatedBackground />

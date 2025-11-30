@@ -190,9 +190,97 @@ export const getUserById = query({
       role: user.role,
       emailVerified: user.emailVerified,
       kycStatus: user.kycStatus,
+      accountHolderName1: user.accountHolderName1,
+      accountHolderName2: user.accountHolderName2,
+      dateOfBirth: user.dateOfBirth,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      zipCode: user.zipCode,
+      country: user.country,
+      phoneNumber: user.phoneNumber,
+      phoneCountryCode: user.phoneCountryCode,
+      accountType: user.accountType,
+      hasLLCTrustCorp: user.hasLLCTrustCorp,
+      hasCryptoIRA: user.hasCryptoIRA,
+      profileImageId: user.profileImageId,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  },
+});
+
+/**
+ * Update user profile
+ */
+export const updateProfile = mutation({
+  args: {
+    userId: v.id("users"),
+    accountHolderName1: v.optional(v.string()),
+    accountHolderName2: v.optional(v.string()),
+    dateOfBirth: v.optional(v.number()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    phoneCountryCode: v.optional(v.string()),
+    accountType: v.optional(v.union(
+      v.literal("Individual Staking"),
+      v.literal("Digital Wealth Partner"),
+      v.literal("Joint Ownership Account")
+    )),
+    hasLLCTrustCorp: v.optional(v.boolean()),
+    hasCryptoIRA: v.optional(v.boolean()),
+    profileImageId: v.optional(v.id("_storage")),
+  },
+  handler: async (ctx, args) => {
+    const { userId, ...updates } = args;
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(userId, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
+/**
+ * Delete user (admin only)
+ */
+export const deleteUser = mutation({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Delete user's balance
+    const balance = await ctx.db
+      .query("balances")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+    if (balance) {
+      await ctx.db.delete(balance._id);
+    }
+
+    // Delete user's sessions
+    const sessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    for (const session of sessions) {
+      await ctx.db.delete(session._id);
+    }
+
+    // Delete user
+    await ctx.db.delete(args.userId);
+
+    return { success: true };
   },
 });
 
@@ -213,6 +301,7 @@ export const listUsers = query({
       role: user.role,
       emailVerified: user.emailVerified,
       kycStatus: user.kycStatus,
+      accountHolderName1: user.accountHolderName1,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
@@ -246,6 +335,23 @@ export const createUserInternal = internalMutation({
   args: {
     email: v.string(),
     passwordHash: v.string(),
+    accountHolderName1: v.optional(v.string()),
+    accountHolderName2: v.optional(v.string()),
+    dateOfBirth: v.optional(v.number()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    phoneCountryCode: v.optional(v.string()),
+    accountType: v.optional(v.union(
+      v.literal("Individual Staking"),
+      v.literal("Digital Wealth Partner"),
+      v.literal("Joint Ownership Account")
+    )),
+    hasLLCTrustCorp: v.optional(v.boolean()),
+    hasCryptoIRA: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await ctx.db.insert("users", {
@@ -256,6 +362,19 @@ export const createUserInternal = internalMutation({
       kycStatus: "not_started",
       kycDocuments: [],
       twoFactorEnabled: false,
+      accountHolderName1: args.accountHolderName1,
+      accountHolderName2: args.accountHolderName2,
+      dateOfBirth: args.dateOfBirth,
+      address: args.address,
+      city: args.city,
+      state: args.state,
+      zipCode: args.zipCode,
+      country: args.country,
+      phoneNumber: args.phoneNumber,
+      phoneCountryCode: args.phoneCountryCode,
+      accountType: args.accountType,
+      hasLLCTrustCorp: args.hasLLCTrustCorp,
+      hasCryptoIRA: args.hasCryptoIRA,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

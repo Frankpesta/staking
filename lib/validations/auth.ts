@@ -10,6 +10,24 @@ export const signUpSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number")
     .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
   confirmPassword: z.string(),
+  // Profile fields
+  accountHolderName1: z.string().min(1, "Account Holder Name 1 is required"),
+  accountHolderName2: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Date of Birth is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  zipCode: z.string().min(1, "Zip Code is required"),
+  country: z.string().min(1, "Country is required"),
+  phoneNumber: z.string().min(1, "Phone Number is required"),
+  phoneCountryCode: z.string().min(1, "Country Code is required"),
+  accountType: z.enum(["Individual Staking", "Digital Wealth Partner", "Joint Ownership Account"]),
+  hasLLCTrustCorp: z.boolean(),
+  hasCryptoIRA: z.boolean(),
+  recaptchaToken: z.string().min(1, "Please complete the security check"),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the terms of use",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],

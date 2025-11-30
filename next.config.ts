@@ -5,6 +5,18 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@walletconnect/ethereum-provider"],
   // Removed webpack config - pino stub can be handled via package.json or module resolution
   // If pino causes issues, consider using a package.json override or different logger
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.convex.cloud",
+      },
+      {
+        protocol: "https",
+        hostname: "*.convex.site",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

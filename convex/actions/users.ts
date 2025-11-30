@@ -22,6 +22,24 @@ export const createUser = action({
   args: {
     email: v.string(),
     password: v.string(),
+    accountHolderName1: v.optional(v.string()),
+    accountHolderName2: v.optional(v.string()),
+    dateOfBirth: v.optional(v.number()),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    phoneCountryCode: v.optional(v.string()),
+    accountType: v.optional(v.union(
+      v.literal("Individual Staking"),
+      v.literal("Digital Wealth Partner"),
+      v.literal("Joint Ownership Account")
+    )),
+    hasLLCTrustCorp: v.optional(v.boolean()),
+    hasCryptoIRA: v.optional(v.boolean()),
+    recaptchaToken: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<{ userId: string; verificationToken: string }> => {
     // Check if user already exists
@@ -42,6 +60,19 @@ export const createUser = action({
     const userId = await ctx.runMutation(internal.users.createUserInternal, {
       email: args.email,
       passwordHash,
+      accountHolderName1: args.accountHolderName1,
+      accountHolderName2: args.accountHolderName2,
+      dateOfBirth: args.dateOfBirth,
+      address: args.address,
+      city: args.city,
+      state: args.state,
+      zipCode: args.zipCode,
+      country: args.country,
+      phoneNumber: args.phoneNumber,
+      phoneCountryCode: args.phoneCountryCode,
+      accountType: args.accountType,
+      hasLLCTrustCorp: args.hasLLCTrustCorp,
+      hasCryptoIRA: args.hasCryptoIRA,
     });
 
     // Generate email verification token

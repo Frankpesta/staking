@@ -17,6 +17,7 @@ import {
   Menu,
   ArrowDownCircle,
   ArrowUpCircle,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -28,6 +29,7 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Deposit", href: "/dashboard/deposit", icon: ArrowDownCircle },
   { name: "Withdraw", href: "/dashboard/withdraw", icon: ArrowUpCircle },
   { name: "Staking", href: "/dashboard/staking", icon: TrendingUp },
