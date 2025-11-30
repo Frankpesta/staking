@@ -99,6 +99,8 @@ export default defineSchema({
       v.literal("cancelled")
     ),
     maturedAmount: v.optional(v.number()),
+    accumulatedRoi: v.optional(v.number()), // ROI accumulated daily, only withdrawable at maturity
+    lastRoiCalculation: v.optional(v.number()), // Timestamp of last ROI calculation
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
   })

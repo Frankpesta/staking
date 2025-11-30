@@ -158,17 +158,13 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
           }
         }
 
-        // Check if we have missing prices (rate limit error)
-        const hasMissingPrices = coinsToFetch.length > 0 && 
-          coinsToFetch.some(coin => !prices[coin.toUpperCase()] || prices[coin.toUpperCase()] === 0);
-        
         setPortfolioValue({
           totalAvailable: totalAvailableUSD,
           totalStaked: totalStakedUSD,
           totalDeposited: totalDepositedUSD,
           isLoading: false,
           lastUpdated: Date.now(),
-          error: hasMissingPrices ? "Some prices unavailable. Using cached data." : null,
+          error: null,
         });
       } catch (error) {
         console.error("Error calculating portfolio value:", error);

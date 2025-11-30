@@ -61,6 +61,8 @@ export const createStakingPool = mutation({
       startDate: now,
       endDate,
       status: "active",
+      accumulatedRoi: 0, // Start with 0 accumulated ROI
+      lastRoiCalculation: now, // Track when ROI was last calculated
       createdAt: now,
     });
 
@@ -138,6 +140,35 @@ export const getAllStakingPools = query({
 });
 
 /**
+ * Get total accumulated ROI for a user's active staking pools
+ */
+export const getUserTotalAccumulatedRoi = query({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const activePools = await ctx.db
+      .query("stakingPools")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    // Group ROI by coin
+    const roiByCoin: Record<string, number> = {};
+    
+    for (const pool of activePools) {
+      const accumulatedRoi = pool.accumulatedRoi || 0;
+      if (!roiByCoin[pool.coin]) {
+        roiByCoin[pool.coin] = 0;
+      }
+      roiByCoin[pool.coin] += accumulatedRoi;
+    }
+
+    return roiByCoin;
+  },
+});
+
+/**
  * Process matured staking pools (called by cron)
  */
 export const processMaturedPools = internalMutation({
@@ -153,8 +184,8 @@ export const processMaturedPools = internalMutation({
     const maturedPools = activePools.filter((pool) => pool.endDate <= now);
 
     for (const pool of maturedPools) {
-      // Calculate matured amount (principal + ROI)
-      const roiAmount = (pool.amount * pool.roiPercentage) / 100;
+      // Use accumulated ROI (calculated daily) or calculate final ROI if not set
+      const roiAmount = pool.accumulatedRoi ?? ((pool.amount * pool.roiPercentage) / 100);
       const maturedAmount = pool.amount + roiAmount;
 
       // Update pool status

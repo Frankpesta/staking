@@ -14,7 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CoinSelector } from "@/components/shared/CoinSelector";
 import { DEFAULT_COINS } from "@/lib/constants";
 import { isAddress } from "viem";
-import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 
 export default function WithdrawPage() {
   const { user } = useAuth();
@@ -92,11 +91,6 @@ export default function WithdrawPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* TradingView Ticker Tape */}
-      <div className="w-full">
-        <TradingViewTicker />
-      </div>
-
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Withdraw Funds</h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">

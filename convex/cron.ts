@@ -12,6 +12,52 @@ export const hourlyStakingCheck = internalMutation({
 });
 
 /**
+ * Daily cron job to calculate ROI for active staking pools
+ */
+export const dailyRoiCalculation = internalMutation({
+  handler: async (ctx) => {
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    // Get all active staking pools
+    const activePools = await ctx.db
+      .query("stakingPools")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .collect();
+
+    for (const pool of activePools) {
+      // Calculate daily ROI amount
+      const totalRoi = (pool.amount * pool.roiPercentage) / 100;
+      const dailyRoi = totalRoi / pool.duration;
+      
+      // Get last calculation time or use start date
+      const lastCalculation = pool.lastRoiCalculation || pool.startDate;
+      
+      // Calculate how many days have passed since last calculation
+      const daysSinceLastCalculation = Math.floor((now - lastCalculation) / oneDayMs);
+      
+      // Only calculate if at least one day has passed
+      if (daysSinceLastCalculation >= 1) {
+        // Calculate accumulated ROI for the days passed
+        const newAccumulatedRoi = (pool.accumulatedRoi || 0) + (dailyRoi * daysSinceLastCalculation);
+        
+        // Don't exceed total ROI
+        const maxRoi = totalRoi;
+        const finalAccumulatedRoi = Math.min(newAccumulatedRoi, maxRoi);
+        
+        // Update pool with accumulated ROI
+        await ctx.db.patch(pool._id, {
+          accumulatedRoi: finalAccumulatedRoi,
+          lastRoiCalculation: now,
+        });
+      }
+    }
+
+    return { calculated: activePools.length };
+  },
+});
+
+/**
  * Daily cron job for cleanup and reports
  */
 export const dailyCleanup = internalMutation({

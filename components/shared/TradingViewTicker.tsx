@@ -137,7 +137,7 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
     <div className={`relative w-full ${className}`}>
       <div
         ref={containerRef}
-        className="tradingview-widget-container h-[60px] w-full rounded-lg overflow-hidden border border-border/50 bg-gradient-to-r from-card/80 via-card/60 to-card/80 backdrop-blur-sm shadow-sm"
+        className="tradingview-widget-container h-[60px] w-full rounded-lg overflow-hidden border border-border/50 bg-background/95 dark:bg-background/95 backdrop-blur-sm shadow-sm"
         style={{ minHeight: "60px" }}
       />
       <style jsx global>{`
@@ -147,10 +147,6 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
         .tradingview-widget-container iframe {
           border-radius: 0.5rem;
           border: none !important;
-        }
-        /* Ensure the widget adapts to dark/light theme */
-        .dark .tradingview-widget-container {
-          background: linear-gradient(to right, rgba(24, 24, 27, 0.8), rgba(39, 39, 42, 0.6), rgba(24, 24, 27, 0.8)) !important;
         }
       `}</style>
     </div>

@@ -281,32 +281,32 @@ function UserDetailDialog({
 
   return (
     <Dialog open={!!userId} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
+      <DialogContent className="max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full p-3 sm:p-4 md:p-6">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle>User Details</DialogTitle>
-              <DialogDescription>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg sm:text-xl">User Details</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm break-words">
                 Complete information for {user.email}
               </DialogDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               {!isEditing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="text-xs sm:text-sm">
+                    <Edit className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Edit</span>
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={handleDelete}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                  <Button variant="destructive" size="sm" onClick={handleDelete} className="text-xs sm:text-sm">
+                    <Trash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Delete</span>
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="text-xs sm:text-sm">
+                    <X className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Cancel</span>
                   </Button>
                 </>
               )}
@@ -340,27 +340,27 @@ function UserDetailDialog({
 
           {/* Account Information */}
           <div className="space-y-4">
-            <h3 className="font-semibold border-b pb-2">Account Information</h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Account Information</h3>
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Email</Label>
-                <p className="text-sm py-2 px-3 rounded-md bg-muted">{user.email}</p>
+                <Label className="text-xs sm:text-sm">Email</Label>
+                <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">{user.email}</p>
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
-                <p className="text-sm py-2 px-3 rounded-md bg-muted capitalize">{user.role}</p>
+                <Label className="text-xs sm:text-sm">Role</Label>
+                <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted capitalize">{user.role}</p>
               </div>
               <div className="space-y-2">
-                <Label>Email Verified</Label>
-                <p className="text-sm py-2 px-3 rounded-md bg-muted">{user.emailVerified ? "Yes" : "No"}</p>
+                <Label className="text-xs sm:text-sm">Email Verified</Label>
+                <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted">{user.emailVerified ? "Yes" : "No"}</p>
               </div>
               <div className="space-y-2">
-                <Label>KYC Status</Label>
-                <p className="text-sm py-2 px-3 rounded-md bg-muted capitalize">{user.kycStatus}</p>
+                <Label className="text-xs sm:text-sm">KYC Status</Label>
+                <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted capitalize">{user.kycStatus}</p>
               </div>
               <div className="space-y-2">
-                <Label>Created At</Label>
-                <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                <Label className="text-xs sm:text-sm">Created At</Label>
+                <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                   {new Date(user.createdAt).toLocaleString()}
                 </p>
               </div>
@@ -369,36 +369,36 @@ function UserDetailDialog({
 
           {/* Profile Information */}
           <div className="space-y-4">
-            <h3 className="font-semibold border-b pb-2">Profile Information</h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Profile Information</h3>
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Account Holder&apos;s Name 1</Label>
+                <Label className="text-xs sm:text-sm">Account Holder&apos;s Name 1</Label>
                 {isEditing ? (
-                  <Input {...register("accountHolderName1")} />
+                  <Input {...register("accountHolderName1")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.accountHolderName1 || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Account Holder&apos;s Name 2</Label>
+                <Label className="text-xs sm:text-sm">Account Holder&apos;s Name 2</Label>
                 {isEditing ? (
-                  <Input {...register("accountHolderName2")} />
+                  <Input {...register("accountHolderName2")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.accountHolderName2 || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Date of Birth</Label>
+                <Label className="text-xs sm:text-sm">Date of Birth</Label>
                 {isEditing ? (
-                  <Input type="date" {...register("dateOfBirth")} />
+                  <Input type="date" {...register("dateOfBirth")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted">
                     {user.dateOfBirth
                       ? new Date(user.dateOfBirth).toLocaleDateString()
                       : "Not set"}
@@ -407,14 +407,14 @@ function UserDetailDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Account Type</Label>
+                <Label className="text-xs sm:text-sm">Account Type</Label>
                 {isEditing ? (
                   <Controller
                     name="accountType"
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
+                        <SelectTrigger className="text-sm">
                           <SelectValue placeholder="Select account type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -426,58 +426,58 @@ function UserDetailDialog({
                     )}
                   />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.accountType || "Not set"}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <Label>Address</Label>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-xs sm:text-sm">Address</Label>
                 {isEditing ? (
-                  <Input {...register("address")} />
+                  <Input {...register("address")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.address || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>City</Label>
+                <Label className="text-xs sm:text-sm">City</Label>
                 {isEditing ? (
-                  <Input {...register("city")} />
+                  <Input {...register("city")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.city || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>State</Label>
+                <Label className="text-xs sm:text-sm">State</Label>
                 {isEditing ? (
-                  <Input {...register("state")} />
+                  <Input {...register("state")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.state || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Zip Code</Label>
+                <Label className="text-xs sm:text-sm">Zip Code</Label>
                 {isEditing ? (
-                  <Input {...register("zipCode")} />
+                  <Input {...register("zipCode")} className="text-sm" />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.zipCode || "Not set"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Country</Label>
+                <Label className="text-xs sm:text-sm">Country</Label>
                 {isEditing ? (
                   <Controller
                     name="country"
@@ -486,20 +486,21 @@ function UserDetailDialog({
                       <CountrySelector
                         value={field.value}
                         onValueChange={field.onChange}
+                        className="text-sm"
                       />
                     )}
                   />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.country || "Not set"}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <Label>Phone Number</Label>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-xs sm:text-sm">Phone Number</Label>
                 {isEditing ? (
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
                     <Controller
                       name="phoneCountryCode"
                       control={control}
@@ -507,18 +508,19 @@ function UserDetailDialog({
                         <PhoneCodeSelector
                           value={field.value}
                           onValueChange={field.onChange}
+                          className="text-sm"
                         />
                       )}
                     />
                     <Input
-                      className="md:col-span-2"
+                      className="sm:col-span-2 text-sm"
                       type="tel"
                       placeholder="Phone Number"
                       {...register("phoneNumber")}
                     />
                   </div>
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted break-words">
                     {user.phoneCountryCode && user.phoneNumber
                       ? `${user.phoneCountryCode} ${user.phoneNumber}`
                       : "Not set"}
@@ -527,7 +529,7 @@ function UserDetailDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Has LLC, Trust or Corporation?</Label>
+                <Label className="text-xs sm:text-sm">Has LLC, Trust or Corporation?</Label>
                 {isEditing ? (
                   <Controller
                     name="hasLLCTrustCorp"
@@ -536,28 +538,28 @@ function UserDetailDialog({
                       <RadioGroup
                         value={field.value ? "yes" : "no"}
                         onValueChange={(value) => field.onChange(value === "yes")}
-                        className="flex gap-6"
+                        className="flex gap-4 sm:gap-6"
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="yes" id="llc-yes" />
-                          <Label htmlFor="llc-yes" className="cursor-pointer">Yes</Label>
+                          <Label htmlFor="llc-yes" className="cursor-pointer text-xs sm:text-sm">Yes</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="no" id="llc-no" />
-                          <Label htmlFor="llc-no" className="cursor-pointer">No</Label>
+                          <Label htmlFor="llc-no" className="cursor-pointer text-xs sm:text-sm">No</Label>
                         </div>
                       </RadioGroup>
                     )}
                   />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted">
                     {user.hasLLCTrustCorp ? "Yes" : "No"}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Has Crypto IRA?</Label>
+                <Label className="text-xs sm:text-sm">Has Crypto IRA?</Label>
                 {isEditing ? (
                   <Controller
                     name="hasCryptoIRA"
@@ -566,21 +568,21 @@ function UserDetailDialog({
                       <RadioGroup
                         value={field.value ? "yes" : "no"}
                         onValueChange={(value) => field.onChange(value === "yes")}
-                        className="flex gap-6"
+                        className="flex gap-4 sm:gap-6"
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="yes" id="ira-yes" />
-                          <Label htmlFor="ira-yes" className="cursor-pointer">Yes</Label>
+                          <Label htmlFor="ira-yes" className="cursor-pointer text-xs sm:text-sm">Yes</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="no" id="ira-no" />
-                          <Label htmlFor="ira-no" className="cursor-pointer">No</Label>
+                          <Label htmlFor="ira-no" className="cursor-pointer text-xs sm:text-sm">No</Label>
                         </div>
                       </RadioGroup>
                     )}
                   />
                 ) : (
-                  <p className="text-sm py-2 px-3 rounded-md bg-muted">
+                  <p className="text-xs sm:text-sm py-2 px-3 rounded-md bg-muted">
                     {user.hasCryptoIRA ? "Yes" : "No"}
                   </p>
                 )}
@@ -591,20 +593,20 @@ function UserDetailDialog({
           {/* Balances */}
           {balance && (
             <div className="space-y-4">
-              <h3 className="font-semibold border-b pb-2">Balances</h3>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">Available</p>
-                  <p className="text-lg font-semibold">
+              <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Balances</h3>
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="rounded-lg border p-3 sm:p-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
+                  <p className="text-sm sm:text-lg font-semibold break-words">
                     {Object.entries(availableBalance || {})
                       .filter(([_, v]) => v > 0)
                       .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
                       .join(", ") || "0"}
                   </p>
                 </div>
-                <div className="rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">Staked</p>
-                  <p className="text-lg font-semibold">
+                <div className="rounded-lg border p-3 sm:p-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Staked</p>
+                  <p className="text-sm sm:text-lg font-semibold break-words">
                     {Object.entries(stakedBalance || {})
                       .filter(([_, v]) => v > 0)
                       .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
@@ -618,17 +620,17 @@ function UserDetailDialog({
           {/* Recent Transactions */}
           {transactions && transactions.length > 0 && (
             <div className="space-y-4">
-              <h3 className="font-semibold border-b pb-2">Recent Transactions</h3>
+              <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Recent Transactions</h3>
               <div className="space-y-2">
                 {transactions.map((tx) => (
-                  <div key={tx._id} className="flex items-center justify-between rounded-lg border p-3">
-                    <div>
-                      <p className="font-medium capitalize">{tx.type}</p>
-                      <p className="text-sm text-muted-foreground">
+                  <div key={tx._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-xs sm:text-sm capitalize break-words">{tx.type}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground break-words">
                         {tx.amount.toFixed(6)} {tx.coin}
                       </p>
                     </div>
-                    <Badge>{tx.status}</Badge>
+                    <Badge className="text-xs w-fit">{tx.status}</Badge>
                   </div>
                 ))}
               </div>
@@ -636,8 +638,8 @@ function UserDetailDialog({
           )}
 
           {isEditing && (
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={isSubmitting}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-sm">
                 <Save className="mr-2 h-4 w-4" />
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>

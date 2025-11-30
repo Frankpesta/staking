@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CryptoIcon } from "@/components/shared/CryptoIcon";
 import { Copy, Check, ExternalLink, Loader2, Wallet, ArrowRight } from "lucide-react";
-import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 import { QRCodeSVG } from "qrcode.react";
 import { DEFAULT_COINS } from "@/lib/constants";
 import { convexApi } from "@/lib/utils/convex-api";
@@ -149,11 +148,6 @@ export default function DepositPage() {
   if (!selectedCoin) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* TradingView Ticker Tape */}
-        <div className="w-full">
-          <TradingViewTicker />
-        </div>
-
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Deposit Funds</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
@@ -197,11 +191,6 @@ export default function DepositPage() {
   if (!amountConfirmed) {
     return (
       <div className="space-y-6">
-        {/* TradingView Ticker Tape */}
-        <div className="w-full">
-          <TradingViewTicker />
-        </div>
-
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -293,11 +282,6 @@ export default function DepositPage() {
   if (!isConnected) {
     return (
       <div className="space-y-6">
-        {/* TradingView Ticker Tape */}
-        <div className="w-full">
-          <TradingViewTicker />
-        </div>
-
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -369,11 +353,6 @@ export default function DepositPage() {
   // Step 4: Deposit Address Display
   return (
     <div className="space-y-6">
-      {/* TradingView Ticker Tape */}
-      <div className="w-full">
-        <TradingViewTicker />
-      </div>
-
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
