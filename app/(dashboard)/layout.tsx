@@ -3,7 +3,7 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { DashboardFooter } from "@/components/layout/DashboardFooter";
-import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
+// import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -59,11 +59,11 @@ export default function DashboardLayout({
         </main>
 
         {/* TradingView Ticker */}
-        <div className="w-full border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        {/* <div className="w-full border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 md:px-6 py-2">
             <TradingViewTicker />
           </div>
-        </div>
+        </div> */}
 
         <DashboardFooter />
       </div>
