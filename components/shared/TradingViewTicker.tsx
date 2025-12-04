@@ -18,52 +18,55 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
   }, []);
 
   useEffect(() => {
-    if (!mounted || !containerRef.current) return;
+    if (!mounted || !containerRef.current || typeof window === "undefined") return;
 
     // Capture ref values for cleanup
     const container = containerRef.current;
     const currentScript = scriptRef.current;
 
-    // Remove existing script if present
-    if (currentScript) {
-      currentScript.remove();
-    }
+    // Small delay to ensure DOM is ready and doesn't interfere with navigation
+    const timeoutId = setTimeout(() => {
+      try {
+      // Remove existing script if present
+      if (currentScript && currentScript.parentNode) {
+        currentScript.parentNode.removeChild(currentScript);
+      }
 
-    // Clear container
-    container.innerHTML = "";
+      // Clear container safely
+      container.innerHTML = "";
 
-    // Create container div for TradingView widget
-    const widgetContainer = document.createElement("div");
-    widgetContainer.className = "tradingview-widget-container__widget";
-    container.appendChild(widgetContainer);
+      // Create container div for TradingView widget
+      const widgetContainer = document.createElement("div");
+      widgetContainer.className = "tradingview-widget-container__widget";
+      container.appendChild(widgetContainer);
 
-    // Determine theme - check DOM class first (most reliable)
-    // next-themes adds "dark" class to html element
-    const htmlElement = document.documentElement;
-    const hasDarkClass = htmlElement.classList.contains("dark");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
-    // Use resolvedTheme if available, otherwise check DOM
-    let isDarkMode = false;
-    if (resolvedTheme === "dark") {
-      isDarkMode = true;
-    } else if (resolvedTheme === "light") {
-      isDarkMode = false;
-    } else {
-      // System theme or not resolved yet - check DOM class
-      isDarkMode = hasDarkClass || (resolvedTheme === "system" && prefersDark);
-    }
-    
-    // Force dark mode if DOM has dark class (most reliable)
-    if (hasDarkClass) {
-      isDarkMode = true;
-    }
+      // Determine theme - check DOM class first (most reliable)
+      // next-themes adds "dark" class to html element
+      const htmlElement = document.documentElement;
+      const hasDarkClass = htmlElement.classList.contains("dark");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      
+      // Use resolvedTheme if available, otherwise check DOM
+      let isDarkMode = false;
+      if (resolvedTheme === "dark") {
+        isDarkMode = true;
+      } else if (resolvedTheme === "light") {
+        isDarkMode = false;
+      } else {
+        // System theme or not resolved yet - check DOM class
+        isDarkMode = hasDarkClass || (resolvedTheme === "system" && prefersDark);
+      }
+      
+      // Force dark mode if DOM has dark class (most reliable)
+      if (hasDarkClass) {
+        isDarkMode = true;
+      }
 
-    // Create configuration script
-    const configScript = document.createElement("script");
-    configScript.type = "text/javascript";
-    configScript.innerHTML = JSON.stringify({
-      symbols: [
+      // Create configuration script
+      const configScript = document.createElement("script");
+      configScript.type = "text/javascript";
+      configScript.innerHTML = JSON.stringify({
+        symbols: [
         {
           proName: "BINANCE:BTCUSDT",
           title: "Bitcoin",
@@ -124,30 +127,42 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
           proName: "BINANCE:ETCUSDT",
           title: "Ethereum Classic",
         },
-      ],
-      showSymbolLogo: true,
-      colorTheme: "dark",
-      isTransparent: false,
-      displayMode: "adaptive",
-      locale: "en",
-    });
-    widgetContainer.appendChild(configScript);
+        ],
+        showSymbolLogo: true,
+        colorTheme: "dark",
+        isTransparent: false,
+        displayMode: "adaptive",
+        locale: "en",
+      });
+      widgetContainer.appendChild(configScript);
 
-    // Create and append the TradingView widget script
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.type = "text/javascript";
-    script.async = true;
-    widgetContainer.appendChild(script);
-    scriptRef.current = script;
+      // Create and append the TradingView widget script
+      const script = document.createElement("script");
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.type = "text/javascript";
+      script.async = true;
+      script.onerror = () => {
+        console.error("Failed to load TradingView widget");
+      };
+        widgetContainer.appendChild(script);
+        scriptRef.current = script;
+      } catch (error) {
+        console.error("Error initializing TradingView widget:", error);
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       // Use captured values from effect scope
-      if (scriptRef.current) {
-        scriptRef.current.remove();
-      }
-      if (container) {
-        container.innerHTML = "";
+      try {
+        if (scriptRef.current && scriptRef.current.parentNode) {
+          scriptRef.current.parentNode.removeChild(scriptRef.current);
+        }
+        if (container) {
+          container.innerHTML = "";
+        }
+      } catch (error) {
+        console.error("Error cleaning up TradingView widget:", error);
       }
     };
   }, [mounted, resolvedTheme]);
@@ -170,10 +185,12 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
       <style jsx global>{`
         .tradingview-widget-container {
           position: relative;
+          pointer-events: auto;
         }
         .tradingview-widget-container iframe {
           border-radius: 0.5rem;
           border: none !important;
+          pointer-events: auto;
         }
       `}</style>
     </div>
