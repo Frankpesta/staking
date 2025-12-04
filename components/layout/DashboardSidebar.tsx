@@ -45,13 +45,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Only call onLinkClick if it exists (for mobile menu closing)
-    // Don't prevent default navigation - let Next.js Link handle it
-    onLinkClick?.();
-    // Explicitly allow navigation to proceed
-  };
-
   return (
     <>
       <div className="flex h-16 items-center border-b px-6">
@@ -65,7 +58,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <Link
               key={item.name}
               href={item.href}
-              onClick={onLinkClick ? handleLinkClick : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -91,7 +83,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           variant="ghost"
           className="w-full justify-start"
           onClick={() => {
-            handleLinkClick();
+            onLinkClick?.();
             logout();
           }}
         >
