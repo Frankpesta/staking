@@ -34,8 +34,27 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
   });
 
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const previousBalanceRef = useRef<string | null>(null);
+  const isCalculatingRef = useRef(false);
 
   useEffect(() => {
+    // Prevent concurrent calculations
+    if (isCalculatingRef.current) {
+      return;
+    }
+
+    // Serialize balance to check if it actually changed
+    const balanceKey = balance ? JSON.stringify(balance) : null;
+    
+    // Skip if balance hasn't actually changed
+    if (balanceKey === previousBalanceRef.current) {
+      return;
+    }
+    
+    // Update the ref
+    previousBalanceRef.current = balanceKey;
+    isCalculatingRef.current = true;
+
     if (!balance) {
       setPortfolioValue({
         totalAvailable: 0,
@@ -45,6 +64,7 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
         lastUpdated: null,
         error: null,
       });
+      isCalculatingRef.current = false;
       return;
     }
 
@@ -78,6 +98,7 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
             lastUpdated: Date.now(),
             error: null,
           });
+          isCalculatingRef.current = false;
           return;
         }
 
@@ -166,6 +187,7 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
           lastUpdated: Date.now(),
           error: null,
         });
+        isCalculatingRef.current = false;
       } catch (error) {
         console.error("Error calculating portfolio value:", error);
         setPortfolioValue(prev => ({
@@ -173,18 +195,30 @@ export function usePortfolioValue(balance: BalanceData | undefined) {
           isLoading: false,
           error: error instanceof Error ? error.message : "Failed to calculate portfolio value",
         }));
+        isCalculatingRef.current = false;
       }
     };
 
     calculatePortfolioValue();
 
     // Update prices once per day (24 hours) to prevent rate limiting
-    updateIntervalRef.current = setInterval(calculatePortfolioValue, 86400000);
+    // Clear any existing interval first
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+    }
+    updateIntervalRef.current = setInterval(() => {
+      // Only recalculate if not already calculating
+      if (!isCalculatingRef.current) {
+        calculatePortfolioValue();
+      }
+    }, 86400000);
 
     return () => {
       if (updateIntervalRef.current) {
         clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
       }
+      isCalculatingRef.current = false;
     };
   }, [balance]);
 

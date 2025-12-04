@@ -93,7 +93,14 @@ export function WalletConnect() {
               key={connector.uid}
               variant="outline"
               className="w-full justify-start"
-              onClick={() => connect({ connector })}
+              onClick={async () => {
+                try {
+                  await connect({ connector });
+                } catch (error) {
+                  console.error(`Failed to connect to ${connector.name}:`, error);
+                  alert(`Failed to connect to ${connector.name}. Please make sure the wallet extension is installed and unlocked.`);
+                }
+              }}
             >
               {connector.name}
             </Button>

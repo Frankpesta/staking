@@ -35,11 +35,6 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
       // Clear container safely
       container.innerHTML = "";
 
-      // Create container div for TradingView widget
-      const widgetContainer = document.createElement("div");
-      widgetContainer.className = "tradingview-widget-container__widget";
-      container.appendChild(widgetContainer);
-
       // Determine theme - check DOM class first (most reliable)
       // next-themes adds "dark" class to html element
       const htmlElement = document.documentElement;
@@ -62,81 +57,81 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
         isDarkMode = true;
       }
 
-      // Create configuration script
-      const configScript = document.createElement("script");
-      configScript.type = "text/javascript";
-      configScript.innerHTML = JSON.stringify({
+      // Create container div for TradingView widget with proper structure
+      const widgetContainer = document.createElement("div");
+      widgetContainer.className = "tradingview-widget-container__widget";
+      
+      const config = {
         symbols: [
-        {
-          proName: "BINANCE:BTCUSDT",
-          title: "Bitcoin",
-        },
-        {
-          proName: "BINANCE:ETHUSDT",
-          title: "Ethereum",
-        },
-        {
-          proName: "BINANCE:BNBUSDT",
-          title: "BNB",
-        },
-        {
-          proName: "BINANCE:ADAUSDT",
-          title: "Cardano",
-        },
-        {
-          proName: "BINANCE:SOLUSDT",
-          title: "Solana",
-        },
-        {
-          proName: "BINANCE:XRPUSDT",
-          title: "XRP",
-        },
-        {
-          proName: "BINANCE:DOTUSDT",
-          title: "Polkadot",
-        },
-        {
-          proName: "BINANCE:DOGEUSDT",
-          title: "Dogecoin",
-        },
-        {
-          proName: "BINANCE:MATICUSDT",
-          title: "Polygon",
-        },
-        {
-          proName: "BINANCE:AVAXUSDT",
-          title: "Avalanche",
-        },
-        {
-          proName: "BINANCE:LINKUSDT",
-          title: "Chainlink",
-        },
-        {
-          proName: "BINANCE:UNIUSDT",
-          title: "Uniswap",
-        },
-        {
-          proName: "BINANCE:ATOMUSDT",
-          title: "Cosmos",
-        },
-        {
-          proName: "BINANCE:LTCUSDT",
-          title: "Litecoin",
-        },
-        {
-          proName: "BINANCE:ETCUSDT",
-          title: "Ethereum Classic",
-        },
+          {
+            proName: "BINANCE:BTCUSDT",
+            title: "Bitcoin",
+          },
+          {
+            proName: "BINANCE:ETHUSDT",
+            title: "Ethereum",
+          },
+          {
+            proName: "BINANCE:BNBUSDT",
+            title: "BNB",
+          },
+          {
+            proName: "BINANCE:ADAUSDT",
+            title: "Cardano",
+          },
+          {
+            proName: "BINANCE:SOLUSDT",
+            title: "Solana",
+          },
+          {
+            proName: "BINANCE:XRPUSDT",
+            title: "XRP",
+          },
+          {
+            proName: "BINANCE:DOTUSDT",
+            title: "Polkadot",
+          },
+          {
+            proName: "BINANCE:DOGEUSDT",
+            title: "Dogecoin",
+          },
+          {
+            proName: "BINANCE:MATICUSDT",
+            title: "Polygon",
+          },
+          {
+            proName: "BINANCE:AVAXUSDT",
+            title: "Avalanche",
+          },
+          {
+            proName: "BINANCE:LINKUSDT",
+            title: "Chainlink",
+          },
+          {
+            proName: "BINANCE:UNIUSDT",
+            title: "Uniswap",
+          },
+          {
+            proName: "BINANCE:ATOMUSDT",
+            title: "Cosmos",
+          },
+          {
+            proName: "BINANCE:LTCUSDT",
+            title: "Litecoin",
+          },
+          {
+            proName: "BINANCE:ETCUSDT",
+            title: "Ethereum Classic",
+          },
         ],
         showSymbolLogo: true,
-        colorTheme: "dark",
+        colorTheme: isDarkMode ? "dark" : "light",
         isTransparent: false,
         displayMode: "adaptive",
         locale: "en",
-      });
-      widgetContainer.appendChild(configScript);
+      };
 
-      // Create and append the TradingView widget script
+      // Create and append the TradingView widget script first
       const script = document.createElement("script");
       script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
       script.type = "text/javascript";
@@ -144,8 +139,17 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
       script.onerror = () => {
         console.error("Failed to load TradingView widget");
       };
-        widgetContainer.appendChild(script);
-        scriptRef.current = script;
+      widgetContainer.appendChild(script);
+      scriptRef.current = script;
+
+      // Create configuration script AFTER widget script
+      // Use type="application/json" to prevent browser from executing it
+      const configScript = document.createElement("script");
+      configScript.type = "application/json";
+      configScript.textContent = JSON.stringify(config);
+      widgetContainer.appendChild(configScript);
+      
+      container.appendChild(widgetContainer);
       } catch (error) {
         console.error("Error initializing TradingView widget:", error);
       }

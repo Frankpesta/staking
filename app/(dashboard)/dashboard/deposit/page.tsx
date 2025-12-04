@@ -135,12 +135,17 @@ export default function DepositPage() {
     }
   };
 
-  const handleConnectWallet = () => {
+  const handleConnectWallet = async () => {
     // Prefer WalletConnect connector
     const walletConnectConnector = connectors.find(c => c.name.toLowerCase().includes('walletconnect'));
     const connector = walletConnectConnector || connectors[0];
     if (connector) {
-      connect({ connector });
+      try {
+        await connect({ connector });
+      } catch (error) {
+        console.error(`Failed to connect to ${connector.name}:`, error);
+        alert(`Failed to connect to ${connector.name}. Please make sure the wallet extension is installed and unlocked.`);
+      }
     }
   };
 
@@ -320,7 +325,14 @@ export default function DepositPage() {
                   variant="outline"
                   size="lg"
                   className="w-full justify-start h-auto py-4"
-                  onClick={() => connect({ connector })}
+                  onClick={async () => {
+                    try {
+                      await connect({ connector });
+                    } catch (error) {
+                      console.error(`Failed to connect to ${connector.name}:`, error);
+                      alert(`Failed to connect to ${connector.name}. Please make sure the wallet extension is installed and unlocked.`);
+                    }
+                  }}
                 >
                   <Wallet className="mr-3 h-5 w-5" />
                   <div className="flex-1 text-left">
