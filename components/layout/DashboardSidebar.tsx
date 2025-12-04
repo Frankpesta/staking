@@ -44,7 +44,6 @@ const navigation = [
 // Sidebar content component (reusable for desktop and mobile)
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { logout, user } = useAuth();
 
   const handleLinkClick = () => {
