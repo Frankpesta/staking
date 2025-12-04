@@ -142,11 +142,14 @@ export function TradingViewTicker({ className = "" }: TradingViewTickerProps) {
       widgetContainer.appendChild(script);
       scriptRef.current = script;
 
-      // Create configuration script AFTER widget script
-      // Use type="application/json" to prevent browser from executing it
+      // Create configuration script AFTER widget script (TradingView standard format)
+      // TradingView widget reads the previous script tag's textContent as JSON
       const configScript = document.createElement("script");
-      configScript.type = "application/json";
-      configScript.textContent = JSON.stringify(config);
+      configScript.type = "text/javascript";
+      const configJson = JSON.stringify(config);
+      // Set as textContent - browser will execute it as a block statement (harmless)
+      // TradingView reads the textContent before execution
+      configScript.textContent = configJson;
       widgetContainer.appendChild(configScript);
       
       container.appendChild(widgetContainer);
