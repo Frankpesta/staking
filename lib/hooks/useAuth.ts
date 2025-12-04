@@ -55,7 +55,8 @@ export function useAuth() {
     // Clear local storage and state
     removeAuthToken();
     setToken(null);
-    router.push("/login");
+    // Force a full page reload to ensure all state is cleared and UI updates
+    window.location.href = "/login";
   };
 
   // Determine loading state: initial load OR token exists but user query hasn't resolved yet
