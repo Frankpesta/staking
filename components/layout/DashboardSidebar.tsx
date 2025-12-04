@@ -45,7 +45,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLinkClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
     // Call onLinkClick for mobile menu closing, but don't prevent navigation
     onLinkClick?.();
     // Don't prevent default - let Next.js Link handle navigation
