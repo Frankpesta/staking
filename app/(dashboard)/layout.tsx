@@ -6,7 +6,7 @@ import { DashboardFooter } from "@/components/layout/DashboardFooter";
 import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function DashboardLayout({
   children,
@@ -15,18 +15,18 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Only redirect if loading is complete and user is not authenticated
-    // Add a small delay to prevent redirect loops
-    if (!isLoading && !isAuthenticated) {
-      const timer = setTimeout(() => {
-        router.push("/login");
-      }, 100);
-      return () => clearTimeout(timer);
+    if (isLoading || hasRedirected.current) return;
+
+    if (!isAuthenticated) {
+      hasRedirected.current = true;
+      router.replace("/login"); // safer than push()
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Show loader while auth is initializing
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -35,7 +35,7 @@ export default function DashboardLayout({
     );
   }
 
-  // If not authenticated after loading, show loading while redirecting
+  // While redirecting, prevent UI flicker
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -50,20 +50,23 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <DashboardSidebar />
+
       <div className="flex flex-1 flex-col md:ml-64">
         <DashboardHeader />
+
         <main className="flex-1 overflow-y-auto">
           <div className="container mx-auto p-4 md:p-6">{children}</div>
         </main>
-        {/* TradingView Ticker Tape - Above Footer */}
+
+        {/* TradingView Ticker */}
         <div className="w-full border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 md:px-6 py-2">
             <TradingViewTicker />
           </div>
         </div>
+
         <DashboardFooter />
       </div>
     </div>
   );
 }
-
