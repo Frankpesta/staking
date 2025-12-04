@@ -6,7 +6,7 @@ import { DashboardFooter } from "@/components/layout/DashboardFooter";
 import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
   children,
@@ -15,18 +15,13 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    if (isLoading || hasRedirected.current) return;
-
-    if (!isAuthenticated) {
-      hasRedirected.current = true;
+    if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loader while auth is initializing
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -35,16 +30,8 @@ export default function DashboardLayout({
     );
   }
 
-  // While redirecting, prevent UI flicker
   if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Redirecting to login...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

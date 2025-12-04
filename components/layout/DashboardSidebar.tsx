@@ -45,6 +45,12 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Call onLinkClick for mobile menu closing, but don't prevent navigation
+    onLinkClick?.();
+    // Don't prevent default - let Next.js Link handle navigation
+  };
+
   return (
     <>
       <div className="flex h-16 items-center border-b px-6">
@@ -58,6 +64,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleLinkClick}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -83,7 +90,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           variant="ghost"
           className="w-full justify-start"
           onClick={() => {
-            onLinkClick?.();
+            handleLinkClick();
             logout();
           }}
         >
@@ -120,7 +127,7 @@ export function DashboardSidebar() {
       </Sheet>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:border-r md:bg-card md:z-30">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:border-r md:bg-card">
         <div className="flex h-screen flex-col">
           <SidebarContent />
         </div>
