@@ -45,13 +45,11 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Only call onLinkClick if it exists (for mobile menu closing)
+    // Don't prevent default navigation - let Next.js Link handle it
     onLinkClick?.();
-  };
-
-  const handleLogout = async () => {
-    handleLinkClick();
-    await logout();
+    // Explicitly allow navigation to proceed
   };
 
   return (
@@ -67,7 +65,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <Link
               key={item.name}
               href={item.href}
-              onClick={handleLinkClick}
+              onClick={onLinkClick ? handleLinkClick : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -92,7 +90,10 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
         <Button
           variant="ghost"
           className="w-full justify-start"
-          onClick={handleLogout}
+          onClick={() => {
+            handleLinkClick();
+            logout();
+          }}
         >
           <LogOut className="mr-2 h-4 w-4" />
           Logout
@@ -127,7 +128,7 @@ export function DashboardSidebar() {
       </Sheet>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:border-r md:bg-card md:z-40">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:border-r md:bg-card md:z-30">
         <div className="flex h-screen flex-col">
           <SidebarContent />
         </div>
