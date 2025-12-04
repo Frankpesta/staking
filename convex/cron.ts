@@ -1,15 +1,8 @@
+import { cronJobs } from "convex/server";
 import { internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-/**
- * Hourly cron job to process matured staking pools
- */
-export const hourlyStakingCheck = internalMutation({
-  handler: async (ctx) => {
-    // Process matured staking pools
-    await ctx.scheduler.runAfter(0, internal.staking.processMaturedPools, {});
-  },
-});
+const crons = cronJobs();
 
 /**
  * Daily cron job to calculate ROI for active staking pools
@@ -80,7 +73,7 @@ export const dailyCleanup = internalMutation({
       activitiesByUser.set(activity.userId, userActivities);
     }
 
-    for (const [userId, activities] of activitiesByUser.entries()) {
+    for (const [, activities] of activitiesByUser.entries()) {
       if (activities.length > 1000) {
         const toDelete = activities.slice(1000);
         for (const activity of toDelete) {
@@ -122,4 +115,36 @@ export const dailyCleanup = internalMutation({
     return { cleaned: true };
   },
 });
+
+/**
+ * Hourly cron job to process matured staking pools
+ * Runs every hour
+ */
+crons.interval(
+  "hourlyStakingCheck",
+  { hours: 1 },
+  internal.staking.processMaturedPools,
+);
+
+/**
+ * Daily cron job to calculate ROI for active staking pools
+ * Runs daily at midnight UTC
+ */
+crons.cron(
+  "dailyRoiCalculation",
+  "0 0 * * *", // Every day at midnight UTC
+  internal.cron.dailyRoiCalculation,
+);
+
+/**
+ * Daily cron job for cleanup and reports
+ * Runs daily at 2 AM UTC
+ */
+crons.cron(
+  "dailyCleanup",
+  "0 2 * * *", // Every day at 2 AM UTC
+  internal.cron.dailyCleanup,
+);
+
+export default crons;
 

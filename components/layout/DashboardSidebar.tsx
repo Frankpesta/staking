@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Wallet,
   TrendingUp,
   ArrowUpDown,
   FileText,
@@ -46,10 +45,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
 
-  const handleLinkClick = () => {
-    onLinkClick?.();
-  };
-
   return (
     <>
       <div className="flex h-16 items-center border-b px-6">
@@ -63,9 +58,9 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <Link
               key={item.name}
               href={item.href}
-              onClick={handleLinkClick}
+              onClick={() => onLinkClick?.()}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer relative z-10",
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -88,9 +83,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
         <Button
           variant="ghost"
           className="w-full justify-start"
-          onClick={() => {
-            logout();
-          }}
+          onClick={logout}
         >
           <LogOut className="mr-2 h-4 w-4" />
           Logout
@@ -133,4 +126,3 @@ export function DashboardSidebar() {
     </>
   );
 }
-
