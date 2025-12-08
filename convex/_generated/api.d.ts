@@ -15,7 +15,7 @@ import type * as actions_users from "../actions/users.js";
 import type * as activities from "../activities.js";
 import type * as appSettings from "../appSettings.js";
 import type * as balances from "../balances.js";
-import type * as cron from "../cron.js";
+import type * as crons from "../crons.js";
 import type * as files from "../files.js";
 import type * as kyc from "../kyc.js";
 import type * as platformWallets from "../platformWallets.js";
@@ -39,7 +39,7 @@ declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   appSettings: typeof appSettings;
   balances: typeof balances;
-  cron: typeof cron;
+  crons: typeof crons;
   files: typeof files;
   kyc: typeof kyc;
   platformWallets: typeof platformWallets;

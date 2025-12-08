@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAction } from "convex/react";
 import { convexApi } from "@/lib/utils/convex-api";
 import { useForm, Controller } from "react-hook-form";
@@ -17,21 +16,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CountrySelector } from "@/components/shared/CountrySelector";
 import { PhoneCodeSelector } from "@/components/shared/PhoneCodeSelector";
 import Link from "next/link";
-import Script from "next/script";
-
-declare global {
-  interface Window {
-    grecaptcha: any;
-    onRecaptchaCallback: (token: string) => void;
-  }
-}
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
-  const recaptchaRef = useRef<HTMLDivElement>(null);
   const createUserAction = useAction(convexApi.actions?.users?.createUser);
 
   const {
@@ -39,36 +27,14 @@ export default function SignUpPage() {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
-    watch,
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       hasLLCTrustCorp: false,
       hasCryptoIRA: false,
       termsAccepted: false,
-      recaptchaToken: "",
     },
   });
-
-  useEffect(() => {
-    window.onRecaptchaCallback = (token: string) => {
-      setValue("recaptchaToken", token, { shouldValidate: true });
-    };
-  }, [setValue]);
-
-  useEffect(() => {
-    if (recaptchaLoaded && recaptchaRef.current && typeof window !== "undefined" && window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha.render(recaptchaRef.current!, {
-          sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
-          callback: (token: string) => {
-            setValue("recaptchaToken", token, { shouldValidate: true });
-          },
-        });
-      });
-    }
-  }, [recaptchaLoaded, setValue]);
 
   const onSubmit = async (data: SignUpInput) => {
     try {
@@ -93,7 +59,6 @@ export default function SignUpPage() {
         accountType: data.accountType,
         hasLLCTrustCorp: data.hasLLCTrustCorp,
         hasCryptoIRA: data.hasCryptoIRA,
-        recaptchaToken: data.recaptchaToken,
       });
       
       setSuccess(true);
@@ -104,7 +69,7 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-background to-muted p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Account created!</CardTitle>
@@ -132,12 +97,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <>
-      <Script
-        src="https://www.google.com/recaptcha/api.js"
-        onLoad={() => setRecaptchaLoaded(true)}
-      />
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-background to-muted p-4 py-8">
         <Card className="w-full max-w-4xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
@@ -433,23 +393,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Security Check */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold border-b pb-2">Security</h3>
-                
-                <div className="space-y-2">
-                  <Label>Security Check *</Label>
-                  <div ref={recaptchaRef} id="recaptcha-container"></div>
-                  <input type="hidden" {...register("recaptchaToken")} />
-                  {errors.recaptchaToken && (
-                    <p className="text-sm text-destructive">{errors.recaptchaToken.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Please complete the security check to verify you&apos;re not a robot.
-                  </p>
-                </div>
-              </div>
-
               {/* Terms and Conditions */}
               <div className="space-y-4">
                 <Controller
@@ -495,6 +438,5 @@ export default function SignUpPage() {
           </CardContent>
         </Card>
       </div>
-    </>
   );
 }

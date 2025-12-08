@@ -66,7 +66,8 @@ function LoginContent() {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      setError(errorMessage);
     }
   };
 
@@ -87,8 +88,15 @@ function LoginContent() {
               </div>
             )}
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive space-y-2">
+                <p>{error}</p>
+                {error.includes("verify your email") && (
+                  <p className="text-xs">
+                    <Link href="/resend-verification" className="text-primary hover:underline font-medium">
+                      Click here to resend verification email
+                    </Link>
+                  </p>
+                )}
               </div>
             )}
             

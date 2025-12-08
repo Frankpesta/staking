@@ -92,11 +92,10 @@ export const createUser = action({
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
-      // Email sending would go here - requires email action to be implemented
-      // await ctx.runAction(internal.actions.email.sendWelcomeEmail, {
-      //   email: args.email,
-      //   verificationLink,
-      // });
+      await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
+        email: args.email,
+        verificationLink,
+      });
     } catch (error) {
       // Log error but don't fail user creation - email sending is optional
       console.error("Failed to send welcome email:", error);
@@ -135,6 +134,11 @@ export const login = action({
 
     if (!isValid) {
       throw new Error("Invalid email or password");
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      throw new Error("Please verify your email before logging in. Check your inbox for the verification link or request a new one.");
     }
 
     // Generate session token
@@ -264,6 +268,59 @@ export const requestPasswordReset = action({
     // await ctx.runAction(internal.actions.email.sendPasswordResetEmail, { email: args.email, resetToken });
 
     return { success: true, resetToken };
+  },
+});
+
+/**
+ * Resend email verification (action version)
+ */
+export const resendVerificationEmail = action({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean }> => {
+    // Find user
+    const user = await ctx.runQuery(internal.users.getUserByEmail, {
+      email: args.email,
+    });
+
+    if (!user) {
+      // Don't reveal if user exists for security - return success anyway
+      return { success: true };
+    }
+
+    // If already verified, return success (don't reveal status)
+    if (user.emailVerified) {
+      return { success: true };
+    }
+
+    // Generate new verification token
+    const verificationToken: string = await ctx.runAction(
+      internal.actions.auth.generateRandomToken,
+      {}
+    );
+
+    await ctx.runMutation(internal.users.createVerificationToken, {
+      userId: user._id,
+      token: verificationToken,
+      expiresAt: generateExpiration(TOKEN_EXPIRATION.EMAIL_VERIFICATION),
+    });
+
+    // Send welcome email with verification link
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
+    
+    try {
+      await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
+        email: args.email,
+        verificationLink,
+      });
+    } catch (error) {
+      // Log error but don't fail - email sending is optional
+      console.error("Failed to send verification email:", error);
+    }
+
+    return { success: true };
   },
 });
 

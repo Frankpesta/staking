@@ -133,7 +133,7 @@ crons.interval(
 crons.cron(
   "dailyRoiCalculation",
   "0 0 * * *", // Every day at midnight UTC
-  internal.cron.dailyRoiCalculation,
+  internal.crons.dailyRoiCalculation,
 );
 
 /**
@@ -143,7 +143,7 @@ crons.cron(
 crons.cron(
   "dailyCleanup",
   "0 2 * * *", // Every day at 2 AM UTC
-  internal.cron.dailyCleanup,
+  internal.crons.dailyCleanup,
 );
 
 export default crons;

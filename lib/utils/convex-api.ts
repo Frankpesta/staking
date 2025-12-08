@@ -76,6 +76,7 @@ export const convexApi = api as any as {
       createUser?: any;
       login?: any;
       resetPassword?: any;
+      resendVerificationEmail?: any;
     };
     auth?: {
       hashPassword?: any;

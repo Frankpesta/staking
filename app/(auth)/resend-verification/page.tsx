@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction } from "convex/react";
+import { convexApi } from "@/lib/utils/convex-api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,7 +20,7 @@ type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
 export default function ResendVerificationPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const createUserAction = useAction(api.actions.users.createUser);
+  const resendVerificationAction = useAction(convexApi.actions?.users?.resendVerificationEmail);
 
   const {
     register,
@@ -33,9 +33,7 @@ export default function ResendVerificationPage() {
   const onSubmit = async (data: ResendVerificationInput) => {
     try {
       setError(null);
-      // In a real app, you'd have a separate resend verification endpoint
-      // For now, we'll show a message that they should check their email
-      // or contact support
+      await resendVerificationAction({ email: data.email });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to resend verification email");

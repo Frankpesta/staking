@@ -24,7 +24,6 @@ export const signUpSchema = z.object({
   accountType: z.enum(["Individual Staking", "Digital Wealth Partner", "Joint Ownership Account"]),
   hasLLCTrustCorp: z.boolean(),
   hasCryptoIRA: z.boolean(),
-  recaptchaToken: z.string().min(1, "Please complete the security check"),
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms of use",
   }),

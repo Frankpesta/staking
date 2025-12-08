@@ -104,15 +104,9 @@ export const verifyEmail = mutation({
     });
 
     // Send confirmation email (non-blocking)
-    try {
-      // Email sending would go here - requires email action to be implemented
-      // await ctx.scheduler.runAfter(0, internal.actions.email.sendEmailVerifiedEmail, {
-      //   email: user.email,
-      // });
-    } catch (error) {
-      // Don't fail verification if email fails
-      console.error("Failed to send verification confirmation email:", error);
-    }
+    // Note: Mutations can't directly call actions, so we skip the confirmation email
+    // The user already knows they verified since they clicked the link
+    // If needed, this could be handled via a scheduled action or webhook
 
     return { success: true };
   },
