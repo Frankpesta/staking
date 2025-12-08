@@ -88,17 +88,28 @@ export const createUser = action({
     });
 
     // Send welcome email with verification link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://truststaking.live";
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
-      await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
+      console.log(`[CreateUser] Attempting to send welcome email to ${args.email}`);
+      const emailResult = await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
         email: args.email,
         verificationLink,
       });
+      console.log(`[CreateUser] Email sending result:`, emailResult);
+      
+      if (!emailResult.success) {
+        console.error(`[CreateUser] Email sending failed:`, emailResult.error);
+      }
     } catch (error) {
       // Log error but don't fail user creation - email sending is optional
-      console.error("Failed to send welcome email:", error);
+      console.error("[CreateUser] Exception while sending welcome email:", error);
+      console.error("[CreateUser] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        email: args.email,
+      });
     }
 
     return {
@@ -307,17 +318,28 @@ export const resendVerificationEmail = action({
     });
 
     // Send welcome email with verification link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://truststaking.live";
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
-      await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
+      console.log(`[ResendVerification] Attempting to send verification email to ${args.email}`);
+      const emailResult = await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
         email: args.email,
         verificationLink,
       });
+      console.log(`[ResendVerification] Email sending result:`, emailResult);
+      
+      if (!emailResult.success) {
+        console.error(`[ResendVerification] Email sending failed:`, emailResult.error);
+      }
     } catch (error) {
       // Log error but don't fail - email sending is optional
-      console.error("Failed to send verification email:", error);
+      console.error("[ResendVerification] Exception while sending verification email:", error);
+      console.error("[ResendVerification] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        email: args.email,
+      });
     }
 
     return { success: true };

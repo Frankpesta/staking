@@ -8,7 +8,7 @@ import { EmailVerifiedEmail } from "@/emails/email-verified";
 import { render as renderEmail } from "@react-email/render";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = "Truststaking <noreply@truststaking.com>";
+const FROM_EMAIL = "Truststaking <notifications@truststaking.live>";
 
 // Only initialize Resend if API key is available
 let resend: Resend | null = null;
@@ -32,29 +32,48 @@ export const sendWelcomeEmail = action({
     verificationLink: v.string(),
   },
   handler: async (ctx, args) => {
-    // If Resend is not configured, log and return success (email sending disabled)
+    // Check if Resend is configured
+    if (!RESEND_API_KEY) {
+      console.error("[Email Error] RESEND_API_KEY is not set in environment variables");
+      return { success: false, error: "RESEND_API_KEY not configured", skipped: true };
+    }
+
+    // If Resend is not initialized, log and return error
     if (!resend || !render) {
-      console.log(`[Email Disabled] Welcome email would be sent to ${args.email}`);
-      console.log(`[Email Disabled] Verification link: ${args.verificationLink}`);
-      return { success: true, skipped: true };
+      console.error(`[Email Error] Resend not initialized. API Key present: ${!!RESEND_API_KEY}`);
+      console.error(`[Email Error] Would send to: ${args.email}`);
+      console.error(`[Email Error] Verification link: ${args.verificationLink}`);
+      return { success: false, error: "Resend not initialized", skipped: true };
     }
 
     try {
+      console.log(`[Email] Attempting to send welcome email to ${args.email}`);
+      console.log(`[Email] From: ${FROM_EMAIL}`);
+      
       const emailHtml = await render(
         WelcomeEmail({
           userEmail: args.email,
           verificationLink: args.verificationLink,
         })
       );
-      await resend.emails.send({
+      
+      const result = await resend.emails.send({
         from: FROM_EMAIL,
         to: args.email,
         subject: "Welcome to Truststaking - Verify your email",
         html: emailHtml,
       });
-      return { success: true };
+      
+      console.log(`[Email] Successfully sent welcome email to ${args.email}`, result);
+      return { success: true, result };
     } catch (error) {
-      console.error("Failed to send welcome email:", error);
+      console.error("[Email Error] Failed to send welcome email:", error);
+      console.error("[Email Error] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        email: args.email,
+        from: FROM_EMAIL,
+      });
       // Don't throw - allow signup to continue even if email fails
       return { success: false, error: String(error) };
     }

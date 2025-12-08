@@ -36,7 +36,7 @@
    - Example: `https://yourdomain.com`
    - Used in: `convex/actions/users.ts` (lines 91, 310)
    - Purpose: Generates correct verification links in emails
-   - **Current default**: `http://localhost:3000` (development only)
+   - **Current default**: `https://truststaking.live` (production URL)
    - **Action Required**: Set this to your production URL
 
 ### Other Required Variables:
