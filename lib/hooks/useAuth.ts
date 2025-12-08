@@ -55,8 +55,9 @@ export function useAuth() {
     // Clear local storage and state
     removeAuthToken();
     setToken(null);
-    // Force a full page reload to ensure all state is cleared and UI updates
-    window.location.href = "/login";
+    
+    // Redirect to home page and force a full page reload to ensure all state is cleared
+    window.location.href = "/";
   };
 
   // Determine loading state: initial load OR token exists but user query hasn't resolved yet
