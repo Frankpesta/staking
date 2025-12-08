@@ -16,6 +16,7 @@ import {
   BarChart3,
   LogOut,
   Menu,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -32,6 +33,7 @@ const navigation = [
   { name: "Staking Pools", href: "/admin/staking", icon: TrendingUp },
   { name: "KYC Reviews", href: "/admin/kyc", icon: Shield },
   { name: "Support Tickets", href: "/admin/support", icon: HelpCircle },
+  { name: "Send Emails", href: "/admin/emails", icon: Mail },
   { name: "Platform Wallets", href: "/admin/wallets", icon: Wallet },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Settings", href: "/admin/settings", icon: Settings },

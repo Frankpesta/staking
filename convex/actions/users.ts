@@ -87,20 +87,51 @@ export const createUser = action({
       expiresAt: generateExpiration(TOKEN_EXPIRATION.EMAIL_VERIFICATION),
     });
 
-    // Send welcome email with verification link
+    // Send welcome email with verification link via Next.js API
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://truststaking.live";
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
       console.log(`[CreateUser] Attempting to send welcome email to ${args.email}`);
-      const emailResult = await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
-        email: args.email,
-        verificationLink,
-      });
-      console.log(`[CreateUser] Email sending result:`, emailResult);
       
-      if (!emailResult.success) {
-        console.error(`[CreateUser] Email sending failed:`, emailResult.error);
+      // Add timeout to fetch (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      try {
+        const response = await fetch(`${baseUrl}/api/email/send-verification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: args.email,
+            verificationLink,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+          }
+          console.error(`[CreateUser] Email sending failed:`, errorData);
+        } else {
+          const result = await response.json();
+          console.log(`[CreateUser] Email sent successfully:`, result);
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.error("[CreateUser] Email sending timed out after 30 seconds");
+        } else {
+          throw fetchError;
+        }
       }
     } catch (error) {
       // Log error but don't fail user creation - email sending is optional
@@ -109,6 +140,7 @@ export const createUser = action({
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         email: args.email,
+        baseUrl,
       });
     }
 
@@ -317,20 +349,51 @@ export const resendVerificationEmail = action({
       expiresAt: generateExpiration(TOKEN_EXPIRATION.EMAIL_VERIFICATION),
     });
 
-    // Send welcome email with verification link
+    // Send welcome email with verification link via Next.js API
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://truststaking.live";
     const verificationLink = `${baseUrl}/verify-email?token=${verificationToken}`;
     
     try {
       console.log(`[ResendVerification] Attempting to send verification email to ${args.email}`);
-      const emailResult = await ctx.runAction((internal.actions as any).email.sendWelcomeEmail, {
-        email: args.email,
-        verificationLink,
-      });
-      console.log(`[ResendVerification] Email sending result:`, emailResult);
       
-      if (!emailResult.success) {
-        console.error(`[ResendVerification] Email sending failed:`, emailResult.error);
+      // Add timeout to fetch (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      try {
+        const response = await fetch(`${baseUrl}/api/email/send-verification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: args.email,
+            verificationLink,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+          }
+          console.error(`[ResendVerification] Email sending failed:`, errorData);
+        } else {
+          const result = await response.json();
+          console.log(`[ResendVerification] Email sent successfully:`, result);
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.error("[ResendVerification] Email sending timed out after 30 seconds");
+        } else {
+          throw fetchError;
+        }
       }
     } catch (error) {
       // Log error but don't fail - email sending is optional
@@ -339,6 +402,7 @@ export const resendVerificationEmail = action({
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         email: args.email,
+        baseUrl,
       });
     }
 
