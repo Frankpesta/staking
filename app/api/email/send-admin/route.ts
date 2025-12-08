@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/utils/auth";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = "Truststaking <notifications@truststaking.live>";
+const FROM_EMAIL = "Truststaking <notifications@notifications.truststaking.live>";
 
 export async function POST(request: NextRequest) {
   try {

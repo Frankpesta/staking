@@ -8,7 +8,7 @@ import { EmailVerifiedEmail } from "@/emails/email-verified";
 import { render as renderEmail } from "@react-email/render";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = "Truststaking <notifications@truststaking.live>";
+const FROM_EMAIL = "Truststaking <notifications@notifications.truststaking.live>";
 
 // Only initialize Resend if API key is available
 let resend: Resend | null = null;

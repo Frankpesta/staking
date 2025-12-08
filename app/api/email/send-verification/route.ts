@@ -4,7 +4,7 @@ import { WelcomeEmail } from "@/emails/welcome";
 import { render } from "@react-email/render";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = "Truststaking <notifications@truststaking.live>";
+const FROM_EMAIL = "Truststaking <notifications@notifications.truststaking.live>";
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,8 +59,19 @@ export async function POST(request: NextRequest) {
       html: emailHtml,
     });
 
+    // Check if Resend returned an error in the response
+    if (result.error) {
+      console.error(`[Verification Email] Resend API error for ${email}:`, result.error);
+      return NextResponse.json(
+        {
+          error: "Failed to send email",
+          details: result.error.message || String(result.error),
+        },
+        { status: 500 }
+      );
+    }
+
     // Resend returns { data: { id: string } } on success
-    // If there's an error, it throws an exception (handled in catch block)
     console.log(`[Verification Email] Successfully sent to ${email}`, result);
     return NextResponse.json({ success: true, result });
   } catch (error) {
