@@ -200,21 +200,6 @@ export const adminAdjustBalance = mutation({
       args.note ? ` — ${args.note}` : ""
     }`;
 
-    await ctx.db.insert("activities", {
-      userId: args.targetUserId,
-      type: "admin_balance_adjustment",
-      description: `${desc} (by admin ${admin.email})`,
-      metadata: {
-        coin: args.coin,
-        amount: args.amount,
-        direction: args.direction,
-        scope: args.scope,
-        adminId: admin._id,
-        note: args.note,
-      },
-      timestamp: Date.now(),
-    });
-
     await scheduleAdminActivityEmail(ctx, {
       activityType: "admin_balance_adjustment",
       description: `${desc} — Admin: ${admin.email}`,

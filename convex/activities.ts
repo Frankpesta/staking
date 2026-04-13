@@ -16,8 +16,9 @@ export const getUserActivities = query({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
-    // Sort by timestamp descending and take limit
+    // Sort by timestamp descending; omit internal admin balance corrections from user-facing feed
     return activities
+      .filter((a) => a.type !== "admin_balance_adjustment")
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   },
