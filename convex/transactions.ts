@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 /**
  * Create a deposit transaction
@@ -46,6 +47,13 @@ export const createDeposit = mutation({
       description: `Deposit request: ${args.amount} ${args.coin}`,
       metadata: { transactionId, amount: args.amount, coin: args.coin },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "deposit",
+      description: `Deposit request: ${args.amount} ${args.coin}`,
+      userId: args.userId,
+      adminPath: "/admin/transactions",
     });
 
     return { transactionId };
@@ -134,6 +142,13 @@ export const createWithdrawal = mutation({
       timestamp: now,
     });
 
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "withdrawal",
+      description: `Withdrawal request: ${args.amount} ${args.coin}`,
+      userId: args.userId,
+      adminPath: "/admin/transactions",
+    });
+
     return { transactionId };
   },
 });
@@ -185,6 +200,13 @@ export const approveTransaction = mutation({
       timestamp: Date.now(),
     });
 
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: `${transaction.type}_approved`,
+      description: `${transaction.type} approved: ${transaction.amount} ${transaction.coin}`,
+      userId: transaction.userId,
+      adminPath: "/admin/transactions",
+    });
+
     return { success: true };
   },
 });
@@ -234,6 +256,13 @@ export const rejectTransactionPublic = mutation({
       timestamp: Date.now(),
     });
 
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: `${transaction.type}_rejected`,
+      description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}`,
+      userId: transaction.userId,
+      adminPath: "/admin/transactions",
+    });
+
     return { success: true };
   },
 });
@@ -275,6 +304,13 @@ export const completeTransactionPublic = mutation({
       description: `${transaction.type} completed: ${transaction.amount} ${transaction.coin}`,
       metadata: { transactionId: args.transactionId, txHash: args.txHash },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: `${transaction.type}_completed`,
+      description: `${transaction.type} completed: ${transaction.amount} ${transaction.coin}`,
+      userId: transaction.userId,
+      adminPath: "/admin/transactions",
     });
 
     return { success: true };
@@ -377,6 +413,13 @@ export const completeTransaction = internalMutation({
       timestamp: Date.now(),
     });
 
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: `${transaction.type}_completed`,
+      description: `${transaction.type} completed: ${transaction.amount} ${transaction.coin}`,
+      userId: transaction.userId,
+      adminPath: "/admin/transactions",
+    });
+
     return { success: true };
   },
 });
@@ -414,6 +457,13 @@ export const rejectTransaction = internalMutation({
       description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}`,
       metadata: { transactionId: args.transactionId, reason: args.adminNote },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: `${transaction.type}_rejected`,
+      description: `${transaction.type} rejected: ${transaction.amount} ${transaction.coin}`,
+      userId: transaction.userId,
+      adminPath: "/admin/transactions",
     });
 
     return { success: true };

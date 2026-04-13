@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 /**
  * Create a swap transaction (automatic - no admin approval needed)
@@ -102,6 +102,13 @@ export const createSwap = mutation({
         toAmount,
       },
       timestamp: now,
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "swap_completed",
+      description: `Swap: ${args.amount} ${args.fromCoin} → ${toAmount.toFixed(6)} ${args.toCoin}`,
+      userId: args.userId,
+      adminPath: "/admin/transactions",
     });
 
     return { transactionId, success: true };

@@ -39,6 +39,13 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
+function isNavActive(pathname: string, href: string) {
+  if (href === "/admin") {
+    return pathname === "/admin";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 // Sidebar content component (reusable for desktop and mobile)
 function AdminSidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
@@ -50,20 +57,21 @@ function AdminSidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
 
   return (
     <>
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 shrink-0 items-center border-b px-6">
         <h1 className="text-xl font-bold">Admin Panel</h1>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex min-h-0 flex-1 flex-col space-y-1 overflow-y-auto p-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = isNavActive(pathname, item.href);
           return (
             <Link
               key={item.name}
               href={item.href}
+              prefetch
               onClick={handleLinkClick}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "relative z-10 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -76,7 +84,7 @@ function AdminSidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
         })}
       </nav>
 
-      <div className="border-t p-4">
+      <div className="shrink-0 border-t p-4">
         <div className="mb-4 px-3 text-sm">
           <div className="font-medium">{user?.email}</div>
           <div className="text-xs text-muted-foreground">Super Admin</div>
@@ -115,14 +123,14 @@ export function AdminSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden fixed top-4 left-4 z-50"
+            className="md:hidden fixed top-4 left-4 z-[100] h-10 w-10 touch-manipulation bg-background/80 shadow-sm backdrop-blur"
           >
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px] p-0">
-          <div className="flex h-full flex-col">
+        <SheetContent side="left" className="z-[100] w-[280px] p-0">
+          <div className="flex h-full max-h-[100dvh] flex-col">
             <AdminSidebarContent onLinkClick={() => setOpen(false)} />
           </div>
         </SheetContent>

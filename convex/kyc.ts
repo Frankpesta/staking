@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 /**
  * Upload KYC document
@@ -66,6 +67,13 @@ export const uploadKYCDocument = mutation({
       description: `KYC document uploaded: ${args.documentType}`,
       metadata: { documentId, documentType: args.documentType },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "kyc_document_uploaded",
+      description: `KYC document uploaded: ${args.documentType}`,
+      userId: args.userId,
+      adminPath: "/admin/kyc",
     });
 
     return { documentId };
@@ -151,6 +159,13 @@ export const approveKYCDocument = mutation({
         description: "KYC verification approved",
         timestamp: Date.now(),
       });
+
+      await scheduleAdminActivityEmail(ctx, {
+        activityType: "kyc_approved",
+        description: "KYC verification approved",
+        userId: document.userId,
+        adminPath: "/admin/kyc",
+      });
     }
 
     return { success: true };
@@ -192,6 +207,13 @@ export const rejectKYCDocument = mutation({
       description: `KYC document rejected: ${args.rejectionReason}`,
       metadata: { documentId: args.documentId, reason: args.rejectionReason },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "kyc_rejected",
+      description: `KYC rejected: ${args.rejectionReason}`,
+      userId: document.userId,
+      adminPath: "/admin/kyc",
     });
 
     return { success: true };

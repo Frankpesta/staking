@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 /**
  * Create a staking pool
@@ -90,6 +91,13 @@ export const createStakingPool = mutation({
       description: `Staked ${args.amount} ${args.coin} for ${args.duration} days`,
       metadata: { poolId, amount: args.amount, coin: args.coin, duration: args.duration },
       timestamp: now,
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "stake",
+      description: `Staked ${args.amount} ${args.coin} for ${args.duration} days`,
+      userId: args.userId,
+      adminPath: "/admin/staking",
     });
 
     return { poolId };
@@ -240,6 +248,13 @@ export const processMaturedPools = internalMutation({
           coin: pool.coin,
         },
         timestamp: now,
+      });
+
+      await scheduleAdminActivityEmail(ctx, {
+        activityType: "stake_matured",
+        description: `Staking pool matured: ${maturedAmount} ${pool.coin} for user`,
+        userId: pool.userId,
+        adminPath: "/admin/staking",
       });
     }
 

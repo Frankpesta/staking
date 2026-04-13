@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { TOKEN_EXPIRATION } from "../lib/constants";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 function generateExpiration(ms: number): number {
   return Date.now() + ms;
@@ -101,6 +102,13 @@ export const verifyEmail = mutation({
       type: "email_verified",
       description: "Email verified",
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "email_verified",
+      description: `Email verified for ${user.email}`,
+      userId: user._id,
+      adminPath: "/admin/users",
     });
 
     // Send confirmation email (non-blocking)
@@ -382,6 +390,20 @@ export const createUserInternal = internalMutation({
       updatedAt: Date.now(),
     });
 
+    await ctx.db.insert("activities", {
+      userId,
+      type: "account_created",
+      description: `New account registered: ${args.email}`,
+      timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "account_created",
+      description: `New user registered: ${args.email}`,
+      userId,
+      adminPath: "/admin/users",
+    });
+
     return userId;
   },
 });
@@ -458,6 +480,13 @@ export const createActivity = internalMutation({
       type: args.type,
       description: args.description,
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: args.type,
+      description: args.description,
+      userId: args.userId,
+      adminPath: "/admin/users",
     });
   },
 });

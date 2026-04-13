@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { scheduleAdminActivityEmail } from "./notifyAdmin";
 
 /**
  * Create a support ticket
@@ -30,6 +31,13 @@ export const createTicket = mutation({
       description: `Support ticket created: ${args.subject}`,
       metadata: { ticketId },
       timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "support_ticket_created",
+      description: `Support ticket: ${args.subject}`,
+      userId: args.userId,
+      adminPath: "/admin/support",
     });
 
     return { ticketId };
@@ -116,6 +124,13 @@ export const respondToTicket = mutation({
       timestamp: Date.now(),
     });
 
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "support_ticket_response",
+      description: `Admin replied on ticket: ${ticket.subject}`,
+      userId: ticket.userId,
+      adminPath: "/admin/support",
+    });
+
     return { success: true };
   },
 });
@@ -134,9 +149,29 @@ export const updateTicketStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const ticket = await ctx.db.get(args.ticketId);
+    if (!ticket) {
+      throw new Error("Ticket not found");
+    }
+
     await ctx.db.patch(args.ticketId, {
       status: args.status,
       updatedAt: Date.now(),
+    });
+
+    await ctx.db.insert("activities", {
+      userId: ticket.userId,
+      type: "support_ticket_status",
+      description: `Support ticket "${ticket.subject}" status → ${args.status}`,
+      metadata: { ticketId: args.ticketId, status: args.status },
+      timestamp: Date.now(),
+    });
+
+    await scheduleAdminActivityEmail(ctx, {
+      activityType: "support_ticket_status",
+      description: `Ticket "${ticket.subject}" marked ${args.status}`,
+      userId: ticket.userId,
+      adminPath: "/admin/support",
     });
 
     return { success: true };

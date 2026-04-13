@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Mail, Calendar, Shield, Edit, Trash2, Save, X, User } from "lucide-react";
+import { Search, Mail, Calendar, Shield, Edit, Trash2, Save, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CountrySelector } from "@/components/shared/CountrySelector";
 import { PhoneCodeSelector } from "@/components/shared/PhoneCodeSelector";
 import { useForm, Controller } from "react-hook-form";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -114,7 +115,15 @@ export default function AdminUsersPage() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedUser(user._id);
+                    }}
+                  >
                     View Details
                   </Button>
                 </div>
@@ -145,11 +154,20 @@ function UserDetailDialog({
   userId: string;
   onClose: () => void;
 }) {
+  const { token } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [adjustCoin, setAdjustCoin] = useState("");
+  const [adjustAmount, setAdjustAmount] = useState("");
+  const [adjustDirection, setAdjustDirection] = useState<"add" | "subtract">("add");
+  const [adjustScope, setAdjustScope] = useState<
+    "available" | "staked" | "deposit" | "funding"
+  >("funding");
+  const [adjustNote, setAdjustNote] = useState("");
+  const [adjustBusy, setAdjustBusy] = useState(false);
+  const [adjustMessage, setAdjustMessage] = useState<string | null>(null);
 
   const user = useQuery(api.users.getUserById, { userId: userId as any });
   const balance = useQuery(
@@ -164,6 +182,7 @@ function UserDetailDialog({
   const updateProfileMutation = useMutation(api.users.updateProfile);
   const deleteUserMutation = useMutation(api.users.deleteUser);
   const getFileUrlMutation = useMutation(api.files.getFileUrl);
+  const adminAdjustBalanceMutation = useMutation(api.balances.adminAdjustBalance);
 
   const {
     register,
@@ -260,6 +279,43 @@ function UserDetailDialog({
     }
   };
 
+  const handleBalanceAdjust = async () => {
+    if (!user?._id || !token) {
+      setAdjustMessage("Not authenticated");
+      return;
+    }
+    const coin = adjustCoin.trim().toUpperCase();
+    const amount = parseFloat(adjustAmount);
+    if (!coin) {
+      setAdjustMessage("Enter a coin symbol");
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setAdjustMessage("Enter a valid positive amount");
+      return;
+    }
+    setAdjustBusy(true);
+    setAdjustMessage(null);
+    try {
+      await adminAdjustBalanceMutation({
+        adminToken: token,
+        targetUserId: user._id,
+        coin,
+        amount,
+        direction: adjustDirection,
+        scope: adjustScope,
+        note: adjustNote.trim() || undefined,
+      });
+      setAdjustMessage("Balance updated.");
+      setAdjustAmount("");
+      setAdjustNote("");
+    } catch (e) {
+      setAdjustMessage(e instanceof Error ? e.message : "Adjustment failed");
+    } finally {
+      setAdjustBusy(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!user?._id || !confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
       return;
@@ -278,6 +334,15 @@ function UserDetailDialog({
 
   const availableBalance = balance?.availableBalance as Record<string, number> | undefined;
   const stakedBalance = balance?.stakedBalance as Record<string, number> | undefined;
+  const depositBalance = balance?.depositBalance as Record<string, number> | undefined;
+
+  const knownCoins = Array.from(
+    new Set([
+      ...Object.keys(availableBalance || {}),
+      ...Object.keys(stakedBalance || {}),
+      ...Object.keys(depositBalance || {}),
+    ])
+  ).sort();
 
   return (
     <Dialog open={!!userId} onOpenChange={() => onClose()}>
@@ -590,53 +655,6 @@ function UserDetailDialog({
             </div>
           </div>
 
-          {/* Balances */}
-          {balance && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Balances</h3>
-              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="rounded-lg border p-3 sm:p-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
-                  <p className="text-sm sm:text-lg font-semibold break-words">
-                    {Object.entries(availableBalance || {})
-                      .filter(([_, v]) => v > 0)
-                      .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
-                      .join(", ") || "0"}
-                  </p>
-                </div>
-                <div className="rounded-lg border p-3 sm:p-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Staked</p>
-                  <p className="text-sm sm:text-lg font-semibold break-words">
-                    {Object.entries(stakedBalance || {})
-                      .filter(([_, v]) => v > 0)
-                      .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
-                      .join(", ") || "0"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Recent Transactions */}
-          {transactions && transactions.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Recent Transactions</h3>
-              <div className="space-y-2">
-                {transactions.map((tx) => (
-                  <div key={tx._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-xs sm:text-sm capitalize break-words">{tx.type}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground break-words">
-                        {tx.amount.toFixed(6)} {tx.coin}
-                      </p>
-                    </div>
-                    <Badge className="text-xs w-fit">{tx.status}</Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {isEditing && (
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-sm">
@@ -646,6 +664,152 @@ function UserDetailDialog({
             </div>
           )}
         </form>
+
+        {/* Balances (outside profile form so adjustments are independent) */}
+        {balance && (
+          <div className="space-y-4 mt-6">
+            <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Balances</h3>
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-lg border p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
+                <p className="text-sm sm:text-lg font-semibold break-words">
+                  {Object.entries(availableBalance || {})
+                    .filter(([_, v]) => v > 0)
+                    .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
+                    .join(", ") || "0"}
+                </p>
+              </div>
+              <div className="rounded-lg border p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-muted-foreground">Staked</p>
+                <p className="text-sm sm:text-lg font-semibold break-words">
+                  {Object.entries(stakedBalance || {})
+                    .filter(([_, v]) => v > 0)
+                    .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
+                    .join(", ") || "0"}
+                </p>
+              </div>
+              <div className="rounded-lg border p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-muted-foreground">Deposit (ledger)</p>
+                <p className="text-sm sm:text-lg font-semibold break-words">
+                  {Object.entries(depositBalance || {})
+                    .filter(([_, v]) => v > 0)
+                    .map(([coin, amount]) => `${amount.toFixed(4)} ${coin}`)
+                    .join(", ") || "0"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border p-3 sm:p-4 space-y-3 bg-muted/30">
+              <p className="text-sm font-medium">Adjust balances</p>
+              <p className="text-xs text-muted-foreground">
+                Add or subtract by coin. <strong>Funding</strong> moves available and deposit together (typical credits/debits). Other scopes adjust a single bucket.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Coin</Label>
+                  <Input
+                    className="text-sm"
+                    placeholder="e.g. USDT"
+                    value={adjustCoin}
+                    onChange={(e) => setAdjustCoin(e.target.value)}
+                    list={`coins-${userId}`}
+                  />
+                  <datalist id={`coins-${userId}`}>
+                    {knownCoins.map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Amount</Label>
+                  <Input
+                    className="text-sm"
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder="0.0"
+                    value={adjustAmount}
+                    onChange={(e) => setAdjustAmount(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Direction</Label>
+                  <Select
+                    value={adjustDirection}
+                    onValueChange={(v) => setAdjustDirection(v as "add" | "subtract")}
+                  >
+                    <SelectTrigger className="text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="add">Add</SelectItem>
+                      <SelectItem value="subtract">Subtract</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Scope</Label>
+                  <Select
+                    value={adjustScope}
+                    onValueChange={(v) =>
+                      setAdjustScope(v as "available" | "staked" | "deposit" | "funding")
+                    }
+                  >
+                    <SelectTrigger className="text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="funding">Available + deposit</SelectItem>
+                      <SelectItem value="available">Available only</SelectItem>
+                      <SelectItem value="staked">Staked only</SelectItem>
+                      <SelectItem value="deposit">Deposit only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Note (optional)</Label>
+                <Input
+                  className="text-sm"
+                  value={adjustNote}
+                  onChange={(e) => setAdjustNote(e.target.value)}
+                  placeholder="Reason for adjustment"
+                />
+              </div>
+              {adjustMessage && (
+                <p className="text-xs text-muted-foreground">{adjustMessage}</p>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                disabled={adjustBusy || !token}
+                onClick={handleBalanceAdjust}
+              >
+                {adjustBusy ? "Applying…" : "Apply adjustment"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Recent Transactions */}
+        {transactions && transactions.length > 0 && (
+          <div className="space-y-4 mt-6">
+            <h3 className="font-semibold text-sm sm:text-base border-b pb-2">Recent Transactions</h3>
+            <div className="space-y-2">
+              {transactions.map((tx) => (
+                <div key={tx._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-xs sm:text-sm capitalize break-words">{tx.type}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                      {tx.amount.toFixed(6)} {tx.coin}
+                    </p>
+                  </div>
+                  <Badge className="text-xs w-fit">{tx.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

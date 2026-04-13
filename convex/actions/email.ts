@@ -1,6 +1,6 @@
 "use node";
 
-import { action } from "../_generated/server";
+import { action, internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { Resend } from "resend";
 import { WelcomeEmail } from "@/emails/welcome";
@@ -111,3 +111,81 @@ export const sendEmailVerifiedEmail = action({
   },
 });
 
+/**
+ * Notify platform admins about activity (scheduled from mutations).
+ * Set ADMIN_NOTIFICATION_EMAIL in Convex env to a comma-separated list of addresses.
+ */
+export const sendAdminActivityEmail = internalAction({
+  args: {
+    subject: v.string(),
+    description: v.string(),
+    userEmail: v.optional(v.string()),
+    adminPath: v.optional(v.string()),
+  },
+  handler: async (_ctx, args) => {
+    const raw = process.env.ADMIN_NOTIFICATION_EMAIL ?? "";
+    const recipients = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    if (!recipients.length) {
+      console.log(
+        "[Admin notify] ADMIN_NOTIFICATION_EMAIL is not set; skipping admin activity email"
+      );
+      return { skipped: true as const };
+    }
+
+    if (!RESEND_API_KEY || !resend) {
+      console.warn("[Admin notify] RESEND_API_KEY missing; cannot send admin email");
+      return { skipped: true as const };
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://truststaking.live";
+    const path = args.adminPath?.startsWith("/")
+      ? args.adminPath
+      : `/${args.adminPath ?? "admin"}`;
+    const adminUrl = `${baseUrl.replace(/\/$/, "")}${path}`;
+
+    const safeDesc = escapeHtml(args.description);
+    const userLine = args.userEmail
+      ? `<p><strong>User:</strong> ${escapeHtml(args.userEmail)}</p>`
+      : "";
+
+    const html = `
+      <div style="font-family: system-ui, sans-serif; max-width: 560px;">
+        <h2 style="margin: 0 0 12px;">Platform activity</h2>
+        <p style="margin: 0 0 8px;">${safeDesc}</p>
+        ${userLine}
+        <p style="margin: 16px 0 0;">
+          <a href="${adminUrl}" style="color: #2563eb;">Open admin panel →</a>
+        </p>
+      </div>
+    `.trim();
+
+    try {
+      await Promise.all(
+        recipients.map((to) =>
+          resend!.emails.send({
+            from: FROM_EMAIL,
+            to,
+            subject: args.subject,
+            html,
+          })
+        )
+      );
+      return { success: true as const };
+    } catch (error) {
+      console.error("[Admin notify] Failed to send:", error);
+      return { success: false as const };
+    }
+  },
+});
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
