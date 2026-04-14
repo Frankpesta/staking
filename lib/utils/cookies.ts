@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * Set auth token in cookie (for server-side proxy checks)
- * Note: In production, use httpOnly cookies set via API route
- * This is a client-side helper that sets a regular cookie
+ * Set auth token in cookie (for server-side checks, e.g. /admin in middleware)
+ * Note: httpOnly session cookie is set via /api/auth/set-cookie (see middleware for /admin)
  */
 export function setAuthToken(token: string) {
   if (typeof document !== "undefined") {
@@ -19,7 +18,7 @@ export function setAuthToken(token: string) {
 
 /**
  * Get auth token from localStorage (httpOnly cookies can't be read by JS)
- * The httpOnly cookie is used by proxy.ts for server-side checks
+ * The httpOnly cookie is used by middleware for /admin server-side checks
  * localStorage is used by useAuth hook for client-side Convex queries
  */
 export function getAuthToken(): string | null {

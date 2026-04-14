@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 function LoginContent() {
   const router = useRouter();
+  const { refreshTokenFromStorage } = useAuth();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const loginAction = useAction(convexApi.actions?.users?.login);
@@ -37,7 +39,7 @@ function LoginContent() {
       const result = await loginAction(data);
       
       if (result.token) {
-        // Set httpOnly cookie via API route (for proxy.ts server-side checks)
+        // Set httpOnly cookie via API route (middleware uses it for /admin)
         try {
           await fetch("/api/auth/set-cookie", {
             method: "POST",
@@ -51,7 +53,8 @@ function LoginContent() {
         // Also store in localStorage for client-side access (useAuth hook needs this)
         // This is safe because the token is validated server-side via Convex
         localStorage.setItem("auth_token", result.token);
-        
+        refreshTokenFromStorage();
+
         // Get redirect URL from query params or check user role
         const redirectUrl = new URLSearchParams(window.location.search).get("redirect");
         if (redirectUrl) {

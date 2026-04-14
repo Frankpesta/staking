@@ -5,22 +5,34 @@ import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { DashboardFooter } from "@/components/layout/DashboardFooter";
 import { TradingViewTicker } from "@/components/shared/TradingViewTicker";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { getAuthToken } from "@/lib/utils/cookies";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, router]);
+    if (isLoading || isAuthenticated) return;
+
+    const t = window.setTimeout(() => {
+      const stored = getAuthToken();
+      if (!stored) {
+        router.replace("/login");
+        return;
+      }
+      if (user === null) {
+        router.replace("/login");
+      }
+    }, 300);
+
+    return () => clearTimeout(t);
+  }, [isLoading, isAuthenticated, user, router]);
 
   if (isLoading) {
     return (
