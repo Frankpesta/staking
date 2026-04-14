@@ -39,6 +39,21 @@ export const createPlatformWallet = mutation({
 });
 
 /**
+ * Active coin + chain pairs users can deposit to (one row per configured platform wallet).
+ */
+export const listDepositOptions = query({
+  handler: async (ctx) => {
+    const wallets = await ctx.db.query("platformWallets").collect();
+    return wallets
+      .filter((w) => w.isActive)
+      .map((w) => ({ coin: w.coin, chainId: w.chainId }))
+      .sort((a, b) =>
+        a.coin !== b.coin ? a.coin.localeCompare(b.coin) : a.chainId - b.chainId
+      );
+  },
+});
+
+/**
  * Get platform wallet for a coin
  */
 export const getPlatformWallet = query({

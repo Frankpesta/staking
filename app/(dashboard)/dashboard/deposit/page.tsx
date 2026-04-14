@@ -11,54 +11,89 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CryptoIcon } from "@/components/shared/CryptoIcon";
 import { Copy, Check, ExternalLink, Loader2, Wallet, ArrowRight } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { DEFAULT_COINS } from "@/lib/constants";
+import { DEFAULT_COINS, SUPPORTED_CHAINS } from "@/lib/constants";
 import { convexApi } from "@/lib/utils/convex-api";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Get unique coins (group by symbol, prefer native coins)
-const getUniqueCoins = () => {
-  const coinMap = new Map<string, (typeof DEFAULT_COINS)[number]>();
-  
-  DEFAULT_COINS.forEach((coin) => {
-    const key = coin.symbol;
-    if (!coinMap.has(key) || coin.isNative) {
-      coinMap.set(key, coin);
-    }
-  });
-  
-  return Array.from(coinMap.values()).filter(coin => coin.depositEnabled);
+/** Wider than DEFAULT_COINS so admin-configured symbols still work. */
+type DepositCoinMeta = {
+  symbol: string;
+  name: string;
+  chainId: number;
+  isNative: boolean;
+  contractAddress?: string;
+  decimals: number;
+  minDeposit?: number;
+  minWithdrawal?: number;
+  depositEnabled: boolean;
+  withdrawalEnabled: boolean;
 };
 
-const AVAILABLE_COINS = getUniqueCoins();
+function getChainLabel(chainId: number): string {
+  const chain = Object.values(SUPPORTED_CHAINS).find((c) => c.id === chainId);
+  return chain?.name ?? `Chain ${chainId}`;
+}
+
+/** Merge platform wallet row with static metadata for min deposit, etc. */
+function getCoinMeta(coin: string, chainId: number): DepositCoinMeta {
+  const exact = DEFAULT_COINS.find((c) => c.symbol === coin && c.chainId === chainId);
+  if (exact) return { ...exact };
+  const bySymbol = DEFAULT_COINS.find((c) => c.symbol === coin);
+  if (bySymbol) {
+    return { ...bySymbol, chainId };
+  }
+  return {
+    symbol: coin,
+    name: coin,
+    chainId,
+    isNative: true,
+    contractAddress: undefined,
+    decimals: 18,
+    minDeposit: undefined,
+    minWithdrawal: undefined,
+    depositEnabled: true,
+    withdrawalEnabled: true,
+  };
+}
 
 export default function DepositPage() {
   const { user } = useAuth();
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const [selectedCoin, setSelectedCoin] = useState<string>("");
+  const [depositTarget, setDepositTarget] = useState<{
+    coin: string;
+    chainId: number;
+  } | null>(null);
   const [amount, setAmount] = useState<string>("");
   const [amountConfirmed, setAmountConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [autoDetectedTx, setAutoDetectedTx] = useState<string | null>(null);
   const [depositSubmitted, setDepositSubmitted] = useState(false);
-  
+
+  const depositOptions = useQuery(api.platformWallets.listDepositOptions);
+
   const createDepositMutation = useMutation(
     convexApi.transactions?.createDeposit as any
   );
   const platformWallet = useQuery(
     api.platformWallets.getPlatformWallet,
-    selectedCoin ? { coin: selectedCoin } : "skip"
+    depositTarget
+      ? { coin: depositTarget.coin, chainId: depositTarget.chainId }
+      : "skip"
   );
 
-  const selectedCoinConfig = AVAILABLE_COINS.find((c) => c.symbol === selectedCoin);
+  const selectedCoinConfig = depositTarget
+    ? getCoinMeta(depositTarget.coin, depositTarget.chainId)
+    : undefined;
+  const selectedCoin = depositTarget?.coin ?? "";
 
   // Auto-detect deposits when wallet is connected
   const { isMonitoring, detectedTxHash } = useDepositDetection({
     platformWalletAddress: platformWallet?.address || "",
     coin: selectedCoin,
-    chainId: selectedCoinConfig?.chainId || 1,
+    chainId: selectedCoinConfig?.chainId ?? depositTarget?.chainId ?? 1,
     onDepositDetected: (hash, detectedAmount) => {
       setAutoDetectedTx(hash);
       // Use user-entered amount if available, otherwise use detected amount
@@ -70,7 +105,7 @@ export default function DepositPage() {
           coin: selectedCoin,
           amount: depositAmount,
           txHash: hash,
-          chainId: selectedCoinConfig?.chainId,
+          chainId: selectedCoinConfig?.chainId ?? depositTarget?.chainId,
         }).then(() => {
           setDepositSubmitted(true);
           alert(`Deposit detected! ${depositAmount} ${selectedCoin} will be reviewed by admin.`);
@@ -89,8 +124,8 @@ export default function DepositPage() {
     }
   };
 
-  const handleCoinSelect = (coinSymbol: string) => {
-    setSelectedCoin(coinSymbol);
+  const handleCoinSelect = (coinSymbol: string, chainId: number) => {
+    setDepositTarget({ coin: coinSymbol, chainId });
     setAmount("");
     setAmountConfirmed(false);
     setAutoDetectedTx(null);
@@ -114,7 +149,7 @@ export default function DepositPage() {
       return;
     }
 
-    const coinConfig = AVAILABLE_COINS.find((c) => c.symbol === selectedCoin);
+    const coinConfig = selectedCoinConfig;
     if (coinConfig?.minDeposit && numAmount < coinConfig.minDeposit) {
       alert(`Minimum deposit is ${coinConfig.minDeposit} ${selectedCoin}`);
       return;
@@ -126,7 +161,7 @@ export default function DepositPage() {
         coin: selectedCoin,
         amount: numAmount,
         txHash: autoDetectedTx || undefined,
-        chainId: coinConfig?.chainId,
+        chainId: coinConfig?.chainId ?? depositTarget?.chainId,
       });
       setDepositSubmitted(true);
       alert("Deposit request submitted! Admin will review and approve it.");
@@ -149,44 +184,60 @@ export default function DepositPage() {
     }
   };
 
-  // Step 1: Coin Selection
-  if (!selectedCoin) {
+  // Step 1: Coin Selection (only coins with an active platform wallet)
+  if (!depositTarget) {
     return (
       <div className="space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Deposit Funds</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
-            Select a cryptocurrency to deposit
+            Select a cryptocurrency to deposit. Only assets with a configured platform wallet are shown.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {AVAILABLE_COINS.map((coin) => (
-            <Card
-              key={`${coin.symbol}-${coin.chainId}`}
-              className={cn(
-                "cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2",
-                selectedCoin === coin.symbol
-                  ? "border-primary shadow-lg scale-105"
-                  : "border-border hover:border-primary/50"
-              )}
-              onClick={() => handleCoinSelect(coin.symbol)}
-            >
-              <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                <CryptoIcon symbol={coin.symbol} size={64} />
-                <div className="text-center">
-                  <p className="font-semibold text-lg">{coin.symbol}</p>
-                  <p className="text-xs text-muted-foreground">{coin.name}</p>
-                </div>
-                {coin.minDeposit && (
-                  <p className="text-xs text-muted-foreground">
-                    Min: {coin.minDeposit} {coin.symbol}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {depositOptions === undefined ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : depositOptions.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              No deposit methods are available yet. Please check back later or contact support.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {depositOptions.map((opt) => {
+              const meta = getCoinMeta(opt.coin, opt.chainId);
+              return (
+                <Card
+                  key={`${opt.coin}-${opt.chainId}`}
+                  className={cn(
+                    "cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2",
+                    "border-border hover:border-primary/50"
+                  )}
+                  onClick={() => handleCoinSelect(opt.coin, opt.chainId)}
+                >
+                  <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
+                    <CryptoIcon symbol={opt.coin} size={64} />
+                    <div className="text-center">
+                      <p className="font-semibold text-lg">{opt.coin}</p>
+                      <p className="text-xs text-muted-foreground">{meta.name}</p>
+                      <p className="text-xs text-muted-foreground/80">
+                        {getChainLabel(opt.chainId)}
+                      </p>
+                    </div>
+                    {meta.minDeposit != null && meta.minDeposit > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Min: {meta.minDeposit} {opt.coin}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
@@ -199,8 +250,8 @@ export default function DepositPage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => {
-              setSelectedCoin("");
+                       onClick={() => {
+              setDepositTarget(null);
               setAmount("");
             }}
             className="text-muted-foreground"

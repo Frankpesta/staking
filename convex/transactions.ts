@@ -16,11 +16,19 @@ export const createDeposit = mutation({
     fromAddress: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Get platform wallet for this coin
-    const platformWallet = await ctx.db
-      .query("platformWallets")
-      .withIndex("by_coin", (q) => q.eq("coin", args.coin))
-      .first();
+    const platformWallet =
+      args.chainId !== undefined
+        ? await ctx.db
+            .query("platformWallets")
+            .withIndex("by_coin_and_chain", (q) =>
+              q.eq("coin", args.coin).eq("chainId", args.chainId!)
+            )
+            .first()
+        : await ctx.db
+            .query("platformWallets")
+            .withIndex("by_coin", (q) => q.eq("coin", args.coin))
+            .filter((q) => q.eq(q.field("isActive"), true))
+            .first();
 
     if (!platformWallet || !platformWallet.isActive) {
       throw new Error(`Platform wallet not configured for ${args.coin}`);
