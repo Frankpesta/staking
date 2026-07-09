@@ -58,7 +58,8 @@ export default defineSchema({
       v.literal("withdrawal"),
       v.literal("stake"),
       v.literal("unstake"),
-      v.literal("swap")
+      v.literal("swap"),
+      v.literal("roi")
     ),
     coin: v.string(),
     amount: v.number(),

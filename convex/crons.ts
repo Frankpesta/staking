@@ -32,17 +32,48 @@ export const dailyRoiCalculation = internalMutation({
       // Only calculate if at least one day has passed
       if (daysSinceLastCalculation >= 1) {
         // Calculate accumulated ROI for the days passed
-        const newAccumulatedRoi = (pool.accumulatedRoi || 0) + (dailyRoi * daysSinceLastCalculation);
-        
+        const previousAccumulatedRoi = pool.accumulatedRoi || 0;
+        const newAccumulatedRoi = previousAccumulatedRoi + (dailyRoi * daysSinceLastCalculation);
+
         // Don't exceed total ROI
         const maxRoi = totalRoi;
         const finalAccumulatedRoi = Math.min(newAccumulatedRoi, maxRoi);
-        
+        const roiAccrued = finalAccumulatedRoi - previousAccumulatedRoi;
+
         // Update pool with accumulated ROI
         await ctx.db.patch(pool._id, {
           accumulatedRoi: finalAccumulatedRoi,
           lastRoiCalculation: now,
         });
+
+        if (roiAccrued > 0) {
+          // Record the accrual so it shows up in transaction/activity history
+          await ctx.db.insert("transactions", {
+            userId: pool.userId,
+            type: "roi",
+            coin: pool.coin,
+            amount: roiAccrued,
+            status: "completed",
+            requestedAt: now,
+            processedAt: now,
+            metadata: {
+              poolId: pool._id,
+              daysSinceLastCalculation,
+            },
+          });
+
+          await ctx.db.insert("activities", {
+            userId: pool.userId,
+            type: "roi_accrued",
+            description: `Earned ${roiAccrued.toFixed(8)} ${pool.coin} in staking returns`,
+            metadata: {
+              poolId: pool._id,
+              amount: roiAccrued,
+              coin: pool.coin,
+            },
+            timestamp: now,
+          });
+        }
       }
     }
 

@@ -41,6 +41,8 @@ export default function TransactionsPage() {
         return "text-blue-600";
       case "swap":
         return "text-purple-600";
+      case "roi":
+        return "text-emerald-600";
       default:
         return "text-gray-600";
     }
